@@ -1,0 +1,22 @@
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  Serial1.begin(9600);
+  Serial.println("Enter your command here: ");
+  
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  while(!Serial.available()){}
+  String s = Serial.readString();
+  Serial.println("You entered: " + s); 
+  
+}
+
+void print_All()
+{
+  Serial.print("AT - Status check");
+}
+

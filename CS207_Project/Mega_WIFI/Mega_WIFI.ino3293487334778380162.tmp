@@ -1,0 +1,56 @@
+int wifi_Act_Pin = 2;
+
+void print_All()
+{
+  Serial.println("List of Basic commands: ");
+  Serial.println("");
+  Serial.println(" 1) AT - Status check");
+  Serial.println(" 2) AT+RST - Reset WI-FI");
+  Serial.println(" 3) AT+GMR - Print firmware version");
+  Serial.println(" 4) AT+GSLP= Millisecond - Enter deep sleep mode for set time(Reseet Pin High)");
+  Serial.println(" 5) ATE0 - Disable echo (Does not send back received command)");
+  Serial.println(" 6) ATE1 - Enable echo (Does send back received command)");
+  Serial.println("");
+  Serial.println("List of WI-FI layer commands: ");
+  Serial.println("");
+  Serial.println(" 1) AT+CWMODE=? - List valid modes");
+  Serial.println(" 2) AT+CWMODE? - QueryAT+CWLAP AP’s info which is connect by ESP8266.");
+  Serial.println(" 3) AT+CWMODE=mode - 1 = Station mode (client); 2 = AP mode (host); 3 = AP + Station mode;");
+  Serial.println(" 4) AT+CWJAP? - Prints the SSID of Access Point ");
+  Serial.println(" 5) AT+CWJAP=ssid,pwd - Use String Symbvol to connect a SSID with supplied password.");
+  Serial.println(" 6) AT+CWLAP - Lists available Access Points.");
+  Serial.println(" 7) AT+CWLAP=ssid,mac,ch - Search available APs with specific conditions. ecn: 0 = OPEN 1 = WEP 2 = WPA_PSK 3 = WPA2_PSK 4 = WPA_WPA2_PSK. ssid: String, SSID of AP. rssi: signal strength. mac: String, MAC address");
+ Serial.println(" 7) AT+CWLAP - Lists available Access Points.");
+ Serial.println(" 8) ");
+}
+
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  Serial1.begin(9600);
+  pinMode(wifi_Act_Pin, OUTPUT);
+  digitalWrite(wifi_Act_Pin, HIGH);
+  Serial.println("Enter your command here: ");
+  Serial.println("");
+  print_All();
+
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  while (!Serial.available()) {}
+  String s = Serial.readString();
+  Serial.println("You entered: " + s);
+  Serial1.print(s);
+  while (!Serial1.available()) {}
+  while (Serial1.available()){
+  String r = Serial1.readString();}
+  Serial.println("Return is: ");
+  Serial.println(r);
+  Serial.println("");
+  Serial.println("Enter your command here: ");
+  while (Serial.read() != "/n" ) {}
+  print_All();
+}
+
