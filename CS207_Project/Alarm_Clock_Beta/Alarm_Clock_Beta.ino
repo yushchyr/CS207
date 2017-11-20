@@ -38,7 +38,7 @@ int b = 16;
 int aHours = 0;
 int aMinutes = 0;
 int mercury_Value; // Mercury tilt swithc state
-int mecury_Pin = A5; // Mercury pin
+int mercury_Pin = A5; // Mercury pin
 boolean alarmNotSet = true;
 String alarmString = "";
 float currentTemperature, temperature;

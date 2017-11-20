@@ -9,17 +9,17 @@
 */
 #include <UTFT.h>
 #include <URTouch.h>
-#include <Adafruit_GFX.h> // For 3.5 Inch screen
-#include <UTFTGLUE.h> // For 3.5 Inch screen
-#include <TouchScreen.h>
+//#include <Adafruit_GFX.h> // For 3.5 Inch screen
+//#include <UTFTGLUE.h> // For 3.5 Inch screen
+//#include <TouchScreen.h>
 #include <SoftwareSerial.h>
 #include <BY8001.h>
 #include <DS3231.h>
 //==== Creating Objects
 
-//UTFT     myGLCD(SSD1289, 38, 39, 40, 41); //Parameters should be adjusted to your Display/Schield model
-URTouch  myTouch( 6, 5, 4, 3, 2);
-UTFTGLUE myGLCD(0x9488,A2,A1,A3,A4,A0);
+UTFT myGLCD(CTE32HR,38,39,40,41); //Parameters should be adjusted to your Display/Schield model
+URTouch myTouch( 6, 5, 4, 3, 2);
+// UTFTGLUE myGLCD(0x9488,A2,A1,A3,A4,A0);
 
 SoftwareSerial mp3Serial(19, 18);  // RX, TX
 BY8001 mp3;  // creating an instance of class BY8001 and call it 'mp3'
