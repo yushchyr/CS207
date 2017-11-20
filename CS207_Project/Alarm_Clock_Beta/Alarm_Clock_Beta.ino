@@ -37,6 +37,8 @@ int trackNum = 1;
 int b = 16;
 int aHours = 0;
 int aMinutes = 0;
+int mercury_Value; // Mercury tilt swithc state
+int mecury_Pin = A5; // Mercury pin
 boolean alarmNotSet = true;
 String alarmString = "";
 float currentTemperature, temperature;
@@ -344,17 +346,29 @@ void loop() {
       myGLCD.drawBitmap (127, 10, 65, 64, AlarmButton);
       myGLCD.print(alarmString, CENTER, 114);
       myGLCD.drawRoundRect (94, 146, 226, 170);
-      myGLCD.print("DISMISS", CENTER, 150);
+      myGLCD.print("DISMISS", CENTER, 150); // Alarm control
       boolean alarmOn = true;
       while (alarmOn) {
         if (myTouch.dataAvailable()) {
           myTouch.read();
           x = myTouch.getX(); // X coordinate where the screen has been pressed
           y = myTouch.getY(); // Y coordinates where the screen has been pressed
+          
           // Add Read value from a mercury tilt switch 
+          mercury_Value = analogRead(mercury_Pin);
           
           // Add condition for a snoze
-          
+          if(mercury_Value != 0){
+            alarmOn = false;
+            alarmString = "";
+            myGLCD.clrScr();
+            mp3.stopPlayback();
+            delay(100);
+            currentPage = '0';
+            playStatus = '0';
+            mp3.setVolume(15);
+            drawHomeScreen();
+          }
           // Stop alarm button
           if ((x >= 94) && (x <= 226) && (y >= 146) && (y <= 170)) { 
             drawRectFrame(94, 146, 226, 170);
