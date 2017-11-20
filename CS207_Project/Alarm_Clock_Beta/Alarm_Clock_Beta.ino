@@ -399,6 +399,13 @@ void drawHomeScreen() {
   drawHomeClock();
 }
 
+void drawMediaScren() {
+  myGLCD.setBackColor(0, 0, 0); // Sets the background color of the area where the text will be printed to black
+  myGLCD.setColor(255, 255, 255); // Sets color to white
+  myGLCD.setFont(BigFont); // Sets font to big
+  myGLCD.print("MP3 Player", 50, 50 ); // Prints the string on the screen
+}
+
 void drawMusicPlayerScreen() {
   // Title
   myGLCD.setBackColor(0, 0, 0); // Sets the background color of the area where the text will be printed to black
