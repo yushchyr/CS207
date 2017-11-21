@@ -1,4 +1,3 @@
-
 /*
   Arduino Touch Screen MP3 Music Player and Alarm Clock
 
@@ -8,23 +7,7 @@
   UFTF, URTouch and DS3231 libraries made by Henning Karlsen which can be found and downloaded from his website, www.rinkydinkelectronics.com.
   BY8001 MP3 Player Library made by borland of Arduino forum, Released in public domain. Dowload link: https://github.com/r0ndL/BY8001
 */
-
-#include <FreeDefaultFonts.h>
-#include <MCUFRIEND_kbv.h>
-MCUFRIEND_kbv myGLCD;
-#include <TFT_HX8357GLUE.h>
-#include <UTFTGLUE.h>
-
-#include <Adafruit_TFTLCD.h>
-#include <pin_magic.h>
-#include <registers.h>
- 
-#if defined(__SAM3X8E__)
-#undef __FlashStringHelper::F(string_literal)
-#define F(string_literal) string_literal
-#endif
-
-#include <UTFT.h>
+//#include <UTFT.h>
 #include <URTouch.h>
 #include <Adafruit_GFX.h> // For 3.5 Inch screen
 #include <UTFTGLUE.h> // For 3.5 Inch screen
@@ -32,55 +15,13 @@ MCUFRIEND_kbv myGLCD;
 #include <SoftwareSerial.h>
 #include <BY8001.h>
 #include <DS3231.h>
-//#define LCD_CS A3 // Chip Select goes to Analog 3
-//#define LCD_CD A2 // Command/Data goes to Analog 2
-//#define LCD_WR A1 // LCD Write goes to Analog 1
-//#define LCD_RD A0 // LCD Read goes to Analog 0
-//#define LCD_RESET A4 // Can alternately just connect to Arduino's reset pin
-uint8_t YP = A1;  // must be an analog pin, use "An" notation!
-uint8_t XM = A2;  // must be an analog pin, use "An" notation!
-uint8_t YM = 7;   // can be a digital pin
-uint8_t XP = 6;   // can be a digital pin
-uint8_t SwapXY = 1;
-
-uint16_t TS_LEFT = 920;
-uint16_t TS_RT  = 150;
-uint16_t TS_TOP = 940;
-uint16_t TS_BOT = 120;
-char *name = "Unknown controller";
-
-// For better pressure precision, we need to know the resistance
-// between X+ and X- Use any multimeter to read it
-// For the one we're using, its 300 ohms across the X plate
-TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
-TSPoint tp;
-
-#define MINPRESSURE 20
-#define MAXPRESSURE 1000
-
-#define SWAP(a,b) {uint16_t tmp = a; a = b; b = tmp;}
-
-int16_t BOXSIZE;
-int16_t PENRADIUS = 3;
-uint16_t identifier, oldcolor, currentcolor;
-uint8_t Orientation = 0;    //PORTRAIT
-
-// Assign human-readable names to some common 16-bit color values:
-#define BLACK   0x0000
-#define BLUE    0x001F
-#define RED     0xF800
-#define GREEN   0x07E0
-#define CYAN    0x07FF
-#define MAGENTA 0xF81F
-#define YELLOW  0xFFE0
-#define WHITE   0xFFFF
 //==== Creating Objects
 
 //UTFT myGLCD(CTE32HR,38,39,40,41); //Parameters should be adjusted to your Display/Schield model
 
-//Adafruit_TFTLCD myGLCD(LCD_CS, LCD_CD, LCD_WR, LCD_RD, LCD_RESET);
-//URTouch myTouch( 6, 5, 4, 3, 2);
- //UTFTGLUE myGLCD(0x9488,A2,A1,A3,A4,A0);
+Adafruit_TFTLCD tft;
+URTouch myTouch( 6, 5, 4, 3, 2);
+// UTFTGLUE myGLCD(0x9488,A2,A1,A3,A4,A0);
 
 SoftwareSerial mp3Serial(19, 18);  // RX, TX
 BY8001 mp3;  // creating an instance of class BY8001 and call it 'mp3'
@@ -113,88 +54,10 @@ String timeString, hoursString, minutesString, secondsString, hoursS, minutesS, 
 
 void setup() {
   // Initiate display
-//  myGLCD.InitLCD();
-//  myGLCD.clrScr();
-//  myTouch.InitTouch();
-//  myTouch.setPrecision(PREC_MEDIUM);
-uint16_t tmp;
-    myGLCD.begin(9600);
-
-    myGLCD.reset();
-    identifier = myGLCD.readID();
-    //    if (identifier == 0) identifier = 0x9341;
-    if (0) {
-    } else if (identifier == 0x0154) {
-        name = "S6D0154";
-        TS_LEFT = 914; TS_RT = 181; TS_TOP = 957; TS_BOT = 208;
-    } else if (identifier == 0x7783) {
-        name = "ST7781";
-        TS_LEFT = 865; TS_RT = 155; TS_TOP = 942; TS_BOT = 153;
-        SwapXY = 1;
-    } else if (identifier == 0x7789) {
-        name = "ST7789V";
-        YP = A2; XM = A1; YM = 7; XP = 6;
-        TS_LEFT = 906; TS_RT = 169; TS_TOP = 161; TS_BOT = 919;
-    } else if (identifier == 0x9320) {
-        name = "ILI9320";
-        YP = A3; XM = A2; YM = 9; XP = 8;
-        TS_LEFT = 902; TS_RT = 137; TS_TOP = 941; TS_BOT = 134;
-    } else if (identifier == 0x9325) {
-        name = "ILI9325";
-        TS_LEFT = 900; TS_RT = 103; TS_TOP = 96; TS_BOT = 904;
-    } else if (identifier == 0x9325) {
-        name = "ILI9325 Green Dog";
-        TS_LEFT = 900; TS_RT = 130; TS_TOP = 940; TS_BOT = 130;
-    } else if (identifier == 0x9327) {
-        name = "ILI9327";
-        TS_LEFT = 899; TS_RT = 135; TS_TOP = 935; TS_BOT = 79;
-        SwapXY = 1;
-    } else if (identifier == 0x9329) {
-        name = "ILI9329";
-        TS_LEFT = 143; TS_RT = 885; TS_TOP = 941; TS_BOT = 131;
-        SwapXY = 1;
-    } else if (identifier == 0x9341) {
-        name = "ILI9341 BLUE";
-        TS_LEFT = 920; TS_RT = 139; TS_TOP = 944; TS_BOT = 150;
-        SwapXY = 0;
-    } else if (identifier == 0) {
-        name = "ILI9341 DealExtreme";
-        TS_LEFT = 893; TS_RT = 145; TS_TOP = 930; TS_BOT = 135;
-        SwapXY = 1;
-    } else if (identifier == 0 || identifier == 0x9341) {
-        name = "ILI9341";
-        TS_LEFT = 128; TS_RT = 911; TS_TOP = 105; TS_BOT = 908;
-        SwapXY = 1;
-    } else if (identifier == 0x9486) {
-        name = "ILI9486";
-        TS_LEFT = 904; TS_RT = 170; TS_TOP = 950; TS_BOT = 158;
-    } else if (identifier == 0x9488) {
-        name = "ILI9488";
-        TS_LEFT = 904; TS_RT = 170; TS_TOP = 950; TS_BOT = 158;
-    } else if (identifier == 0xB509) {
-        name = "R61509V";
-        TS_LEFT = 889; TS_RT = 149; TS_TOP = 106; TS_BOT = 975;
-        SwapXY = 1;
-    } 
-    else if (identifier == 0x8357){
-       name = "R61509V";
-        TS_LEFT = 889; TS_RT = 149; TS_TOP = 106; TS_BOT = 975;
-        SwapXY = 1;
-    }
-    
-    else {
-        name = "unknown";
-    }
-    switch (Orientation) {      // adjust for different aspects
-        case 0:   break;        //no change,  calibrated for PORTRAIT
-        case 1:   tmp = TS_LEFT, TS_LEFT = TS_BOT, TS_BOT = TS_RT, TS_RT = TS_TOP, TS_TOP = tmp;  break;
-        case 2:   SWAP(TS_LEFT, TS_RT);  SWAP(TS_TOP, TS_BOT); break;
-        case 3:   tmp = TS_LEFT, TS_LEFT = TS_TOP, TS_TOP = TS_RT, TS_RT = TS_BOT, TS_BOT = tmp;  break;
-    }
-
- Serial.begin(9600);
-    ts = TouchScreen(XP, YP, XM, YM, 300);
-    
+  myGLCD.InitLCD();
+  myGLCD.clrScr();
+  myTouch.InitTouch();
+  myTouch.setPrecision(PREC_MEDIUM);
   // Initialize the rtc object
   rtc.begin();
   // Music
