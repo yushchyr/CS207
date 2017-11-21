@@ -24,7 +24,7 @@ MCUFRIEND_kbv myGLCD;
 #define F(string_literal) string_literal
 #endif
 
-#include <UTFT.h>
+//#include <UTFT.h>
 #include <URTouch.h>
 #include <Adafruit_GFX.h> // For 3.5 Inch screen
 #include <UTFTGLUE.h> // For 3.5 Inch screen
@@ -225,38 +225,45 @@ void loop() {
       hoursS = timeString.substring(0, 2);
       minutesS = timeString.substring(3, 5);
       secondsS = timeString.substring(6, 8);
-      myGLCD.setFont(SevenSegNumFont);
-      myGLCD.setColor(0, 255, 0);
-      myGLCD.print(secondsS, 224, 50);
+      myGLCD.setTextSize(SevenSegNumFont);
+      myGLCD.setTextColor(GREEN);
+      myGLCD.setCursor(224,50);
+      myGLCD.print(secondsS);
 
       if ( currentMinutes != minutesS ) {
-        myGLCD.print(minutesS, 128, 50);
+         myGLCD.setCursor(128,50);
+        myGLCD.print(minutesS);
         currentMinutes = minutesS;
       }
       if ( currentHours != hoursS ) {
-        myGLCD.print(hoursS, 32, 50);
+         myGLCD.setCursor(32,50);
+        myGLCD.print(hoursS);
         currentHours = hoursS;
       }
       // Checks for change of the date
       dateS = rtc.getDateStr();
       delay(10);
       if ( currentDate != dateS) {
-        myGLCD.setColor(255, 255, 255); // Sets color to white
-        myGLCD.setFont(BigFont); // Sets font to big
-        myGLCD.print(rtc.getDateStr(), 153, 7);
+        myGLCD.setTextColor(WHITE); // Sets color to white
+        myGLCD.setTextSize(BigFont); // Sets font to big
+         myGLCD.setCursor(153,7);
+        myGLCD.print(rtc.getDateStr());
       }
       // Checks for change of the temperature
       temperature = rtc.getTemp();
       delay(10);
       if ( currentTemperature != temperature ) {
-        myGLCD.setColor(255, 255, 255); // Sets color to white
-        myGLCD.setFont(BigFont); // Sets font to big
-        myGLCD.printNumI(temperature, 39, 7);
+        myGLCD.setTextColor(WHITE); // Sets color to white
+        myGLCD.setTextSize(BigFont); // Sets font to big
+         myGLCD.setCursor(39,7);
+        myGLCD.printNumI(temperature);
         currentTemperature = temperature;
       }
       delay(10);
       currentClock = rtc.getTimeStr();
     }
+
+    
     // Checks whether the screen has been touched
     if (myTouch.dataAvailable()) {
       myTouch.read();
@@ -370,32 +377,34 @@ void loop() {
     }
 
     // Printing the clock in the upper right corner
-    myGLCD.setFont(BigFont);
-    myGLCD.setColor(255, 255, 255);
+    myGLCD.setTextSize(BigFont);
+    myGLCD.setTextColor(WHITE);
     printClock(187, 5);
   }
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Alarm Clock Screen
   if (currentPage == '2') {
-    myGLCD.setFont(BigFont);
-    myGLCD.setColor(255, 255, 255);
-    myGLCD.print("MENU", 5, 5);
-    myGLCD.print("Set Alarm", CENTER, 20);
+    myGLCD.setTextSize(BigFont);
+    myGLCD.setTextColor(WHITE);
+     myGLCD.setCursor(5,5);
+    myGLCD.print("MENU");
+     myGLCD.setCursor(CENTER,20);
+    myGLCD.print("Set Alarm");
 
     // Draws a colon between the hours and the minutes
-    myGLCD.setColor(0, 255, 0);
-    myGLCD.fillCircle (112, 65, 4);
-    myGLCD.setColor(0, 255, 0);
-    myGLCD.fillCircle (112, 85, 4);
-    myGLCD.setFont(SevenSegNumFont);
-    myGLCD.setColor(0, 255, 0);
+    //myGLCD.setTextColor(GREEN);
+    myGLCD.fillCircle (112, 65, 4, GREEN);
+    //myGLCD.setTextColor(0, 255, 0);
+    myGLCD.fillCircle (112, 85, 4, GREEN);
+    myGLCD.setTextSize(SevenSegNumFont);
+    //myGLCD.setTextColor(0, 255, 0);
     myGLCD.printNumI(aHours, 32, 50, 2, '0');
     myGLCD.printNumI(aMinutes, 128, 50, 2, '0');
-    myGLCD.setColor(255, 255, 255);
+    myGLCD.setTextColor(255, 255, 255);
     myGLCD.drawRoundRect (42, 115, 82, 145);
     myGLCD.drawRoundRect (138, 115, 178, 145);
-    myGLCD.setFont(BigFont);
+    myGLCD.setTextSize(BigFont);
     myGLCD.print("H", 54, 122);
     myGLCD.print("M", 150, 122);
 
@@ -418,8 +427,8 @@ void loop() {
           if (aHours >= 24) {
             aHours = 0;
           }
-          myGLCD.setFont(SevenSegNumFont);
-          myGLCD.setColor(0, 255, 0);
+          myGLCD.setTextSize(SevenSegNumFont);
+          myGLCD.setTextColor(0, 255, 0);
           myGLCD.printNumI(aHours, 32, 50, 2, '0');
         }
 
@@ -430,8 +439,8 @@ void loop() {
           if (aMinutes >= 60) {
             aMinutes = 0;
           }
-          myGLCD.setFont(SevenSegNumFont);
-          myGLCD.setColor(0, 255, 0);
+          myGLCD.setTextSize(SevenSegNumFont);
+          myGLCD.setTextColor(0, 255, 0);
           myGLCD.printNumI(aMinutes, 128, 50, 2, '0');
         }
 
@@ -450,7 +459,7 @@ void loop() {
           else {
             alarmString = (String)aHours + ":" + (String)aMinutes + ":" + "00";
           }
-          myGLCD.setFont(BigFont);
+          myGLCD.setTextSize(BigFont);
           myGLCD.print("Alarm set for:", CENTER, 165);
           myGLCD.print(alarmString, CENTER, 191);
 
@@ -460,7 +469,7 @@ void loop() {
         if ((x >= 215) && (x <= 303) && (y >= 115) && (y <= 145)) {
           drawRectFrame(215, 115, 303, 145);
           alarmString = "";
-          myGLCD.setColor(0, 0, 0);
+          myGLCD.setTextColor(0, 0, 0);
           myGLCD.fillRect(45, 165, 275, 210);
         }
 
@@ -483,8 +492,8 @@ void loop() {
       mp3.setVolume(25);
       mp3.playTrackByIndexNumber(1);
       delay(100);
-      myGLCD.setFont(BigFont);
-      myGLCD.setColor(255, 255, 255);
+      myGLCD.setTextSize(BigFont);
+      myGLCD.setTextColor(255, 255, 255);
       myGLCD.print("ALARM", CENTER, 90);
       myGLCD.drawBitmap (127, 10, 65, 64, AlarmButton);
       myGLCD.print(alarmString, CENTER, 114);
@@ -522,20 +531,20 @@ void loop() {
 
 void drawHomeScreen() {
   myGLCD.setBackColor(0, 0, 0); // Sets the background color of the area where the text will be printed to black
-  myGLCD.setColor(255, 255, 255); // Sets color to white
-  myGLCD.setFont(BigFont); // Sets font to big
+  myGLCD.setTextColor(255, 255, 255); // Sets color to white
+  myGLCD.setTextSize(BigFont); // Sets font to big
   myGLCD.print(rtc.getDateStr(), 153, 7);
   myGLCD.print("T:", 7, 7);
   myGLCD.printNumI(rtc.getTemp(), 39, 7);
   myGLCD.print("C", 82, 7);
-  myGLCD.setFont(SmallFont);
+  myGLCD.setTextSize(SmallFont);
   myGLCD.print("o", 74, 5);
   if (alarmString == "" ) {
-    myGLCD.setColor(255, 255, 255);
+    myGLCD.setTextColor(255, 255, 255);
     myGLCD.print("by www.HowToMechatronics.com", CENTER, 215);
   }
   else {
-    myGLCD.setColor(255, 255, 255);
+    myGLCD.setTextColor(255, 255, 255);
     myGLCD.print("Alarm set for: ", 68, 215);
     myGLCD.print(alarmString, 188, 215);
   }
@@ -547,24 +556,24 @@ void drawHomeScreen() {
 void drawMusicPlayerScreen() {
   // Title
   myGLCD.setBackColor(0, 0, 0); // Sets the background color of the area where the text will be printed to black
-  myGLCD.setColor(255, 255, 255); // Sets color to white
-  myGLCD.setFont(BigFont); // Sets font to big
+  myGLCD.setTextColor(255, 255, 255); // Sets color to white
+  myGLCD.setTextSize(BigFont); // Sets font to big
   myGLCD.print("MENU", 5, 5); // Prints the string on the screen
-  myGLCD.setColor(255, 0, 0); // Sets color to red
+  myGLCD.setTextColor(255, 0, 0); // Sets color to red
   myGLCD.drawLine(0, 26, 319, 26); // Draws the red line
-  myGLCD.setColor(255, 255, 255); // Sets color to white
-  myGLCD.setFont(SmallFont); // Sets font to big
+  myGLCD.setTextColor(255, 255, 255); // Sets color to white
+  myGLCD.setTextSize(SmallFont); // Sets font to big
   myGLCD.print("by www.HowToMechatronics.com", CENTER, 215); // Prints the string on the screen
   // Volume Bar
-  myGLCD.setColor(255, 255, 255);
+  myGLCD.setTextColor(255, 255, 255);
   myGLCD.fillRect (78, 184, 78 + 150, 184 + 8);
-  myGLCD.setColor(240, 196, 30);
+  myGLCD.setTextColor(240, 196, 30);
   myGLCD.fillRect (78, 184, 78 + 75, 184 + 8);
   // Track Bar
-  myGLCD.setColor(255, 255, 255);
+  myGLCD.setTextColor(255, 255, 255);
   myGLCD.fillRect (48, 50, 48 + 224, 50 + 8);
-  myGLCD.setFont(SmallFont);
-  myGLCD.setColor(255, 255, 255);
+  myGLCD.setTextSize(SmallFont);
+  myGLCD.setTextColor(255, 255, 255);
   myGLCD.print("0:00", 8, 48);
   myGLCD.print("-0:00", 276, 48);
   drawPlayButton();
@@ -622,43 +631,43 @@ bool checkFor_mp3IsStopped() {
 
 // Highlights the button when pressed
 void drawFrame(int x, int y, int r) {
-  myGLCD.setColor(255, 0, 0);
+  myGLCD.setTextColor(255, 0, 0);
   myGLCD.drawCircle (x, y, r);
   while (myTouch.dataAvailable())
     myTouch.read();
-  myGLCD.setColor(0, 0, 0);
+  myGLCD.setTextColor(0, 0, 0);
   myGLCD.drawCircle (x, y, r);
 }
 
 void drawRectFrame(int x1, int y1, int x2, int y2) {
-  myGLCD.setColor(255, 0, 0);
+  myGLCD.setTextColor(255, 0, 0);
   myGLCD.drawRoundRect (x1, y1, x2, y2);
   while (myTouch.dataAvailable())
     myTouch.read();
-  myGLCD.setColor(255, 255, 255);
+  myGLCD.setTextColor(255, 255, 255);
   myGLCD.drawRoundRect (x1, y1, x2, y2);
 }
 
 void drawUnderline(int x1, int y1, int x2, int y2) {
-  myGLCD.setColor(255, 0, 0);
+  myGLCD.setTextColor(255, 0, 0);
   myGLCD.drawLine (x1, y1, x2, y2);
   while (myTouch.dataAvailable())
     myTouch.read();
-  myGLCD.setColor(0, 0, 0);
+  myGLCD.setTextColor(0, 0, 0);
   myGLCD.drawLine (x1, y1, x2, y2);
 }
 
 // Sound bar
 void drawVolume(int x) {
-  myGLCD.setColor(255, 255, 255);
+  myGLCD.setTextColor(255, 255, 255);
   myGLCD.fillRect (78 + 5 * x, 184, 78 + 150, 184 + 8);
-  myGLCD.setColor(240, 196, 30);
+  myGLCD.setTextColor(240, 196, 30);
   myGLCD.fillRect (78, 184, 78 + 5 * x, 184 + 8);
 }
 
 // Clears the track bar
 void drawTrackBar() {
-  myGLCD.setColor(255, 255, 255);
+  myGLCD.setTextColor(255, 255, 255);
   myGLCD.fillRect (48, 50, 48 + 224, 50 + 8);
 }
 
@@ -673,8 +682,8 @@ void trackPlayTime() {
   playback = totalTime - elapsedTime;
   minutesR = (int)playback / 60;
   secondsR = (((float)playback / 60) - minutesR) * 60;
-  myGLCD.setFont(SmallFont);
-  myGLCD.setColor(255, 255, 255);
+  myGLCD.setTextSize(SmallFont);
+  myGLCD.setTextColor(255, 255, 255);
   myGLCD.printNumI(minutes, 8, 48);
   myGLCD.print(":", 16, 48);
   myGLCD.printNumI((int)seconds, 24, 48, 2, '0');
@@ -683,12 +692,12 @@ void trackPlayTime() {
   myGLCD.print(":", 292, 48);
   myGLCD.printNumI((int)secondsR, 300, 48, 2, '0');
   int trackBarX = map(elapsedTime, 0, totalTime, 0, 224);
-  myGLCD.setColor(255, 0, 0);
+  myGLCD.setTextColor(255, 0, 0);
   myGLCD.fillRect (48, 50, 48 + trackBarX, 50 + 8);
   if (totalTime == elapsedTime) {
     mp3.nextTrack();
     delay(30);
-    myGLCD.setColor(255, 255, 255);
+    myGLCD.setTextColor(255, 255, 255);
     myGLCD.fillRect (48, 50, 48 + 224, 50 + 8);
   }
 }
@@ -701,13 +710,13 @@ void printClock(int x, int y) {
 }
 
 void drawColon() {
-  myGLCD.setColor(0, 255, 0);
+  myGLCD.setTextColor(0, 255, 0);
   myGLCD.fillCircle (112, 65, 4);
-  myGLCD.setColor(0, 255, 0);
+  myGLCD.setTextColor(0, 255, 0);
   myGLCD.fillCircle (112, 85, 4);
-  myGLCD.setColor(0, 255, 0);
+  myGLCD.setTextColor(0, 255, 0);
   myGLCD.fillCircle (208, 65, 4);
-  myGLCD.setColor(0, 255, 0);
+  myGLCD.setTextColor(0, 255, 0);
   myGLCD.fillCircle (208, 85, 4);
 }
 
@@ -716,8 +725,8 @@ void drawHomeClock() {
   currentHours = timeString.substring(0, 2);
   currentMinutes = timeString.substring(3, 5);
   currentSeconds = timeString.substring(6, 8);
-  myGLCD.setFont(SevenSegNumFont);
-  myGLCD.setColor(0, 255, 0);
+  myGLCD.setTextSize(SevenSegNumFont);
+  myGLCD.setTextColor(0, 255, 0);
   myGLCD.print(currentSeconds, 224, 50);
   myGLCD.print(currentMinutes, 128, 50);
   myGLCD.print(currentHours, 32, 50);

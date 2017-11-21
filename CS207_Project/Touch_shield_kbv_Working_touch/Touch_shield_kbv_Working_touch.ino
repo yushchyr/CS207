@@ -133,7 +133,7 @@ void setup(void)
     tft.reset();
     identifier = tft.readID();
     //    if (identifier == 0) identifier = 0x9341;
-    if (identifier) {
+    if (0) {
     } else if (identifier == 0x0154) {
         name = "S6D0154";
         TS_LEFT = 914; TS_RT = 181; TS_TOP = 957; TS_BOT = 208;
