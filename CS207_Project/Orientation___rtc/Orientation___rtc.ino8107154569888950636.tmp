@@ -6,10 +6,17 @@
 // Library list
 #include <TouchScreen.h>
 #include <Adafruit_GFX.h>
+#include <UTFTGLUE.h>
+#include <TFT_HX8357GLUE.h>
 #include <MCUFRIEND_kbv.h>
+#include <DS3231.h>
 
 // Intstantiation of a LCD TFT
 MCUFRIEND_kbv tft;
+//TFT_HX8357GLUE tft;
+
+// Real time clock Intstantiation
+DS3231  rtc(SDA, SCL);
 
 // Pin Assignment for a screen
 uint8_t YP = A1;  // must be an analog pin, use "An" notation!
@@ -23,7 +30,6 @@ uint16_t TS_LEFT; // Touch screen reference value container
 uint16_t TS_RT; // Touch screen reference value container
 uint16_t TS_TOP; // Touch screen reference value container
 uint16_t TS_BOT; // Touch screen reference value container
-char *name = "Unknown controller"; // Screen controller name container
 uint16_t identifier;
 uint8_t Orientation = 0;    // 0 - 3, 0 - PORTRAIT(USB Side), 1 - Landscape
 uint16_t tmp;
@@ -31,6 +37,10 @@ uint16_t xpos, ypos;  //screen coordinates
 int16_t BOXSIZE;
 int16_t PENRADIUS = 3;
 uint16_t oldcolor, currentcolor;
+char *name = "Unknown controller"; // Screen controller name container
+static word totalTime, elapsedTime, playback, minutes, seconds, lastSeconds, minutesR, secondsR;
+String currentClock, currentHours, currentMinutes, currentSeconds, currentDate;
+String timeString, hoursString, minutesString, secondsString, hoursS, minutesS, secondsS, dateS;
 #define MINPRESSURE 20
 #define MAXPRESSURE 1000
 #define SWAP(a,b) {uint16_t tmp = a; a = b; b = tmp;}
@@ -123,6 +133,28 @@ void note_Touch_Input_loop() { // Draw_Note_Loop_Function;
     }
 }
 
+void drawHomeClock() {
+  ts = TouchScreen(XP, YP, XM, YM, 300);
+  tft.begin(identifier);
+  tft.setRotation(Orientation);
+  timeString = rtc.getTimeStr();
+  currentHours = timeString.substring(0, 2);
+  currentMinutes = timeString.substring(3, 5);
+  currentSeconds = timeString.substring(6, 8);
+  tft.setCursor(224, 50);
+  tft.setTextSize(2);
+  tft.setTextColor(Green);
+  tft.print(currentSeconds);
+  tft.setCursor(128, 50);
+  tft.setTextSize(2);
+  tft.setTextColor(Green);
+  tft.print(currentMinutes);
+  tft.setCursor(32, 50);
+  tft.setTextSize(2);
+  rft.setTextColor(Green);;
+  tft.print(currentHours);
+  drawColon();
+}
 
 void setup() {
 // put your setup code here, to run once:
@@ -145,7 +177,7 @@ void setup() {
     case 3: SWAP(TS_RT, TS_BOT); SWAP(TS_RT, TS_LEFT); break;
   }
   // Draw Notes page
-  draw_Note_Screen();
+  //draw_Note_Screen();
 
 }
 
@@ -185,7 +217,7 @@ void loop() {
       xpos = map(tp.x, TS_RT, TS_LEFT, 0, tft.width());
       ypos = map(tp.y, TS_TOP, TS_BOT, 0, tft.height());
     }
-   note_Touch_Input_loop();
+   // note_Touch_Input_loop();
 
 
   }
