@@ -60,7 +60,18 @@ TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
 TSPoint tp; 
 
 void draw_Note_Screen() { // Draw Note function  
-  ts = TouchScreen(XP, YP, XM, YM, 300);
+ 
+  
+}
+
+void note_Touch_Input_loop() { // Draw_Note_Loop_Function;
+    // are we in top color box area ?
+    
+
+}
+
+void setup() {
+   ts = TouchScreen(XP, YP, XM, YM, 300);
   tft.begin(identifier);
   tft.setRotation(Orientation);
   BOXSIZE = tft.width() / 6;
@@ -74,12 +85,73 @@ void draw_Note_Screen() { // Draw Note function
   tft.drawRect(0, 0, BOXSIZE, BOXSIZE, White);
   currentcolor = Red;
   delay(1000);
-  
+// put your setup code here, to run once:
+  tft.begin(9600);
+  tft.reset();
+  identifier = tft.readID();
+  if (identifier == 0x8357) {
+    name = "HX8357D";
+    TS_LEFT = 904; TS_RT = 170; TS_TOP = 950; TS_BOT = 158;
+    SwapXY = 1;
+  }
+  else {
+    name = "unknown";
+  }
+  // Orientation TFT screen
+  switch (Orientation) {
+    case 0:   break;        // No change,  calibrated for PORTRAIT
+    case 1: SWAP(TS_LEFT, TS_BOT);  SWAP(TS_TOP, TS_RT); break; // Landscape
+    case 2: SWAP(TS_LEFT, TS_RT); SWAP(TS_BOT, TS_TOP); break;
+    case 3: SWAP(TS_RT, TS_BOT); SWAP(TS_RT, TS_LEFT); break;
+  }
+  // Draw Notes page
+  draw_Note_Screen();
+   note_Touch_Input_loop();
+
+
+  }
+
+
+}
 }
 
-void note_Touch_Input_loop() { // Draw_Note_Loop_Function;
-  
-    // are we in top color box area ?
+
+void loop() {
+  // put your main code here, to run repeatedly:
+
+
+
+  tp = ts.getPoint();   //tp.x, tp.y are ADC values
+  pinMode(XM, OUTPUT);
+  pinMode(YP, OUTPUT);
+  pinMode(XP, OUTPUT);
+  pinMode(YM, OUTPUT);
+
+  if (tp.z > MINPRESSURE && tp.z < MAXPRESSURE) {
+    if (SwapXY != (Orientation & 1)) SWAP(tp.x, tp.y);
+    // scale from 0->1023 to tft.width  i.e. left = 0, rt = width
+    // most mcufriend have touch (with icons) that extends below the TFT
+    // screens without icons need to reserve a space for "erase"
+    // scale the ADC values from ts.getPoint() to screen values e.g. 0-239
+
+    // Touch Screen input orientation
+    if (Orientation == 0) {
+      xpos = map(tp.x, TS_LEFT, TS_RT, 0, tft.width());
+      ypos = map(tp.y, TS_BOT, TS_TOP, 0, tft.height());
+
+    }
+    else if (Orientation == 1) {
+      xpos = map(tp.x, TS_LEFT, TS_RT, 0, tft.width());
+      ypos = map(tp.y, TS_TOP, TS_BOT, 0, tft.height());
+    }
+    else if (Orientation == 2) {
+      xpos = map(tp.x, TS_LEFT, TS_RT, 0, tft.width());
+      ypos = map(tp.y, TS_BOT, TS_TOP, 0, tft.height());
+    }
+    else if (Orientation == 3) {
+      xpos = map(tp.x, TS_RT, TS_LEFT, 0, tft.width());
+      ypos = map(tp.y, TS_TOP, TS_BOT, 0, tft.height());
+    }
     if (ypos < BOXSIZE) {               //draw white border on selected color box
       oldcolor = currentcolor;
 
@@ -122,73 +194,5 @@ void note_Touch_Input_loop() { // Draw_Note_Loop_Function;
       tft.fillRect(0, BOXSIZE, tft.width(), tft.height() - BOXSIZE, Black);
     }
 }
-
-
-void setup() {
-// put your setup code here, to run once:
-  tft.begin(9600);
-  tft.reset();
-  identifier = tft.readID();
-  if (identifier == 0x8357) {
-    name = "HX8357D";
-    TS_LEFT = 904; TS_RT = 170; TS_TOP = 950; TS_BOT = 158;
-    SwapXY = 1;
-  }
-  else {
-    name = "unknown";
-  }
-  // Orientation TFT screen
-  switch (Orientation) {
-    case 0:   break;        // No change,  calibrated for PORTRAIT
-    case 1: SWAP(TS_LEFT, TS_BOT);  SWAP(TS_TOP, TS_RT); break; // Landscape
-    case 2: SWAP(TS_LEFT, TS_RT); SWAP(TS_BOT, TS_TOP); break;
-    case 3: SWAP(TS_RT, TS_BOT); SWAP(TS_RT, TS_LEFT); break;
-  }
-  // Draw Notes page
-  draw_Note_Screen();
-
 }
 
-
-
-void loop() {
-  // put your main code here, to run repeatedly:
-
-  tp = ts.getPoint();   //tp.x, tp.y are ADC values
-  pinMode(XM, OUTPUT);
-  pinMode(YP, OUTPUT);
-  pinMode(XP, OUTPUT);
-  pinMode(YM, OUTPUT);
-
-  if (tp.z > MINPRESSURE && tp.z < MAXPRESSURE) {
-    if (SwapXY != (Orientation & 1)) SWAP(tp.x, tp.y);
-    // scale from 0->1023 to tft.width  i.e. left = 0, rt = width
-    // most mcufriend have touch (with icons) that extends below the TFT
-    // screens without icons need to reserve a space for "erase"
-    // scale the ADC values from ts.getPoint() to screen values e.g. 0-239
-
-    // Touch Screen input orientation
-    if (Orientation == 0) {
-      xpos = map(tp.x, TS_LEFT, TS_RT, 0, tft.width());
-      ypos = map(tp.y, TS_BOT, TS_TOP, 0, tft.height());
-
-    }
-    else if (Orientation == 1) {
-      xpos = map(tp.x, TS_LEFT, TS_RT, 0, tft.width());
-      ypos = map(tp.y, TS_TOP, TS_BOT, 0, tft.height());
-    }
-    else if (Orientation == 2) {
-      xpos = map(tp.x, TS_LEFT, TS_RT, 0, tft.width());
-      ypos = map(tp.y, TS_BOT, TS_TOP, 0, tft.height());
-    }
-    else if (Orientation == 3) {
-      xpos = map(tp.x, TS_RT, TS_LEFT, 0, tft.width());
-      ypos = map(tp.y, TS_TOP, TS_BOT, 0, tft.height());
-    }
-   note_Touch_Input_loop();
-
-
-  }
-
-
-}

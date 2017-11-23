@@ -5,15 +5,17 @@
 */
 // Library list
 #include <TouchScreen.h>
-#include <Adafruit_GFX.h>
-#include <UTFTGLUE.h>
-#include <TFT_HX8357GLUE.h>
-#include <MCUFRIEND_kbv.h>
+#include <Adafruit_GFX.h>    // Core graphics library
+#include <Adafruit_TFTLCD.h> // Hardware-specific library
+//#include <UTFTGLUE.h>
+//#include <TFT_HX8357GLUE.h>
+//#include <MCUFRIEND_kbv.h>
 #include <DS3231.h>
 
 // Intstantiation of a LCD TFT
-MCUFRIEND_kbv tft;
+//MCUFRIEND_kbv tft;
 //TFT_HX8357GLUE tft;
+Adafruit_TFTLCD tft;
 
 // Real time clock Intstantiation
 DS3231  rtc(SDA, SCL);
@@ -39,6 +41,7 @@ int16_t PENRADIUS = 3;
 uint16_t oldcolor, currentcolor;
 char *name = "Unknown controller"; // Screen controller name container
 static word totalTime, elapsedTime, playback, minutes, seconds, lastSeconds, minutesR, secondsR;
+float currentTemperature, temperature;
 String currentClock, currentHours, currentMinutes, currentSeconds, currentDate;
 String timeString, hoursString, minutesString, secondsString, hoursS, minutesS, secondsS, dateS;
 #define MINPRESSURE 20
@@ -67,9 +70,9 @@ String timeString, hoursString, minutesString, secondsString, hoursS, minutesS, 
 // Touch screen input instantiation
 TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
 // Touch point container
-TSPoint tp; 
+TSPoint tp;
 
-void draw_Note_Screen() { // Draw Note function  
+void draw_Note_Screen() { // Draw Note function
   ts = TouchScreen(XP, YP, XM, YM, 300);
   tft.begin(identifier);
   tft.setRotation(Orientation);
@@ -84,53 +87,53 @@ void draw_Note_Screen() { // Draw Note function
   tft.drawRect(0, 0, BOXSIZE, BOXSIZE, White);
   currentcolor = Red;
   delay(1000);
-  
+
 }
 
 void note_Touch_Input_loop() { // Draw_Note_Loop_Function;
-  
-    // are we in top color box area ?
-    if (ypos < BOXSIZE) {               //draw white border on selected color box
-      oldcolor = currentcolor;
 
-      if (xpos < BOXSIZE) {
-        currentcolor = Red;
-        tft.drawRect(0, 0, BOXSIZE, BOXSIZE, White);
-      } else if (xpos < BOXSIZE * 2) {
-        currentcolor = Yellow;
-        tft.drawRect(BOXSIZE, 0, BOXSIZE, BOXSIZE, White);
-      } else if (xpos < BOXSIZE * 3) {
-        currentcolor = Green;
-        tft.drawRect(BOXSIZE * 2, 0, BOXSIZE, BOXSIZE, White);
-      } else if (xpos < BOXSIZE * 4) {
-        currentcolor = Cyan;
-        tft.drawRect(BOXSIZE * 3, 0, BOXSIZE, BOXSIZE, White);
-      } else if (xpos < BOXSIZE * 5) {
-        currentcolor = Blue;
-        tft.drawRect(BOXSIZE * 4, 0, BOXSIZE, BOXSIZE, White);
-      } else if (xpos < BOXSIZE * 6) {
-        currentcolor = Magenta;
-        tft.drawRect(BOXSIZE * 5, 0, BOXSIZE, BOXSIZE, White);
-      }
+  // are we in top color box area ?
+  if (ypos < BOXSIZE) {               //draw white border on selected color box
+    oldcolor = currentcolor;
 
-      if (oldcolor != currentcolor) { // rub out the previous white border
-        if (oldcolor == Red) tft.fillRect(0, 0, BOXSIZE, BOXSIZE, Red);
-        if (oldcolor == Yellow) tft.fillRect(BOXSIZE, 0, BOXSIZE, BOXSIZE, Yellow);
-        if (oldcolor == Green) tft.fillRect(BOXSIZE * 2, 0, BOXSIZE, BOXSIZE, Green);
-        if (oldcolor == Cyan) tft.fillRect(BOXSIZE * 3, 0, BOXSIZE, BOXSIZE, Cyan);
-        if (oldcolor == Blue) tft.fillRect(BOXSIZE * 4, 0, BOXSIZE, BOXSIZE, Blue);
-        if (oldcolor == Magenta) tft.fillRect(BOXSIZE * 5, 0, BOXSIZE, BOXSIZE, Magenta);
-      }
+    if (xpos < BOXSIZE) {
+      currentcolor = Red;
+      tft.drawRect(0, 0, BOXSIZE, BOXSIZE, White);
+    } else if (xpos < BOXSIZE * 2) {
+      currentcolor = Yellow;
+      tft.drawRect(BOXSIZE, 0, BOXSIZE, BOXSIZE, White);
+    } else if (xpos < BOXSIZE * 3) {
+      currentcolor = Green;
+      tft.drawRect(BOXSIZE * 2, 0, BOXSIZE, BOXSIZE, White);
+    } else if (xpos < BOXSIZE * 4) {
+      currentcolor = Cyan;
+      tft.drawRect(BOXSIZE * 3, 0, BOXSIZE, BOXSIZE, White);
+    } else if (xpos < BOXSIZE * 5) {
+      currentcolor = Blue;
+      tft.drawRect(BOXSIZE * 4, 0, BOXSIZE, BOXSIZE, White);
+    } else if (xpos < BOXSIZE * 6) {
+      currentcolor = Magenta;
+      tft.drawRect(BOXSIZE * 5, 0, BOXSIZE, BOXSIZE, White);
     }
-    // are we in drawing area ?
-    if (((ypos - PENRADIUS) > BOXSIZE) && ((ypos + PENRADIUS) < tft.height())) {
-      tft.fillCircle(xpos, ypos, PENRADIUS, currentcolor);
+
+    if (oldcolor != currentcolor) { // rub out the previous white border
+      if (oldcolor == Red) tft.fillRect(0, 0, BOXSIZE, BOXSIZE, Red);
+      if (oldcolor == Yellow) tft.fillRect(BOXSIZE, 0, BOXSIZE, BOXSIZE, Yellow);
+      if (oldcolor == Green) tft.fillRect(BOXSIZE * 2, 0, BOXSIZE, BOXSIZE, Green);
+      if (oldcolor == Cyan) tft.fillRect(BOXSIZE * 3, 0, BOXSIZE, BOXSIZE, Cyan);
+      if (oldcolor == Blue) tft.fillRect(BOXSIZE * 4, 0, BOXSIZE, BOXSIZE, Blue);
+      if (oldcolor == Magenta) tft.fillRect(BOXSIZE * 5, 0, BOXSIZE, BOXSIZE, Magenta);
     }
-    // are we in erase area ?
-    if (ypos > tft.height() - 10) {
-      // press the bottom of the screen to erase
-      tft.fillRect(0, BOXSIZE, tft.width(), tft.height() - BOXSIZE, Black);
-    }
+  }
+  // are we in drawing area ?
+  if (((ypos - PENRADIUS) > BOXSIZE) && ((ypos + PENRADIUS) < tft.height())) {
+    tft.fillCircle(xpos, ypos, PENRADIUS, currentcolor);
+  }
+  // are we in erase area ?
+  if (ypos > tft.height() - 10) {
+    // press the bottom of the screen to erase
+    tft.fillRect(0, BOXSIZE, tft.width(), tft.height() - BOXSIZE, Black);
+  }
 }
 
 
@@ -159,13 +162,15 @@ void drawColon() {
   tft.fillCircle (112, 65, 4, Green);
   tft.fillCircle (112, 85, 4, Green);
   tft.fillCircle (208, 65, 4, Green);
-  tft.fillCircle (208, 85, 4, Green );
+  tft.fillCircle (208, 85, 4, Green);
 }
 
 void setup() {
-// put your setup code here, to run once:
+  // put your setup code here, to run once:
+  Serial.begin(9600);
   tft.begin(9600);
   tft.reset();
+  rtc.begin();
   identifier = tft.readID();
   if (identifier == 0x8357) {
     name = "HX8357D";
@@ -175,7 +180,7 @@ void setup() {
   else {
     name = "unknown";
   }
-  
+
   // Orientation TFT screen
   switch (Orientation) {
     case 0:   break;        // No change,  calibrated for PORTRAIT
@@ -183,9 +188,15 @@ void setup() {
     case 2: SWAP(TS_LEFT, TS_RT); SWAP(TS_BOT, TS_TOP); break;
     case 3: SWAP(TS_RT, TS_BOT); SWAP(TS_RT, TS_LEFT); break;
   }
-  
+  currentTemperature = rtc.getTemp();
+  currentDate = rtc.getDateStr();
+  currentClock = rtc.getTimeStr();
+  timeString = rtc.getTimeStr();
+  currentHours = timeString.substring(0, 2);
+  currentMinutes = timeString.substring(3, 5);
+  currentSeconds = timeString.substring(6, 8);
   // Draw Notes page
-  //draw_Note_Screen();
+  draw_Note_Screen();
 
 }
 
@@ -225,10 +236,10 @@ void loop() {
       xpos = map(tp.x, TS_RT, TS_LEFT, 0, tft.width());
       ypos = map(tp.y, TS_TOP, TS_BOT, 0, tft.height());
     }
-   // note_Touch_Input_loop();
+    note_Touch_Input_loop();
 
 
   }
-drawHomeClock();
+  //drawHomeClock();
 
 }
