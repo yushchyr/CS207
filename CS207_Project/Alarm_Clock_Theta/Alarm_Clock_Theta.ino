@@ -9,6 +9,7 @@
 */
 //#include <UTFT.h>
 //#include <URTouch.h>
+#include <Wire.h>
 #include <SoftwareSerial.h>
 #include <BY8001.h>
 #include <DS3231.h>
@@ -49,7 +50,7 @@ TSPoint tp;
 
 SoftwareSerial mp3Serial(11, 10);  // RX, TX
 BY8001 mp3;  // creating an instance of class BY8001 and call it 'mp3'
-DS3231  Clock();
+DS3231 rtc;
 //==== Defining Fonts
 extern uint8_t SmallFont[];
 extern uint8_t BigFont[];
@@ -70,6 +71,8 @@ int b = 16;
 int aHours = 0;
 int aMinutes = 0;
 boolean alarmNotSet = true;
+bool h12 = false;
+bool PM = false;
 String alarmString = "";
 float currentTemperature, temperature;
 static word totalTime, elapsedTime, playback, minutes, seconds, lastSeconds, minutesR, secondsR;
@@ -80,11 +83,11 @@ void setup() {
   // Initiate display
   myGLCD.InitLCD();
   myGLCD.clrScr();
-  myTouch.InitTouch();
-  myTouch.setPrecision(PREC_MEDIUM);
+  // myTouch.InitTouch();
+//  myTouch.setPrecision(PREC_MEDIUM);
   // Initialize the rtc object
-  rtc.begin();
-  // Music
+Wire.begin();
+// Music
   Serial.begin(9600);  // set serial monitor baud rate to Arduino IDE
   mp3Serial.begin(9600);  // BY8001 set to 9600 baud (required)
   mp3.setup(mp3Serial); // tell BY8001 library which serial port to use.
@@ -95,10 +98,10 @@ void setup() {
   playStatus = '0';
   mp3.setVolume(15);
   delay(100);
-  currentTemperature = rtc.getTemp();
-  currentDate = rtc.getDateStr();
-  currentClock = rtc.getTimeStr();
-  timeString = rtc.getTimeStr();
+  currentTemperature = rtc.getTemperature();
+  currentDate = rtc.getDate();
+  currentClock = rtc.getHour(h12, PM);
+  timeString = rtc.getHour(h12, PM);
   currentHours = timeString.substring(0, 2);
   currentMinutes = timeString.substring(3, 5);
   currentSeconds = timeString.substring(6, 8);
@@ -107,8 +110,8 @@ void loop() {
   // Homes Screen
   if (currentPage == '0') {
     // Checks for change of the clock
-    if ( currentClock != rtc.getTimeStr()) {
-      timeString = rtc.getTimeStr();
+    if ( currentClock != rtc.getHour(h12, PM)) {
+      timeString = rtc.getHour(h12, PM);
       hoursS = timeString.substring(0, 2);
       minutesS = timeString.substring(3, 5);
       secondsS = timeString.substring(6, 8);
@@ -125,15 +128,15 @@ void loop() {
         currentHours = hoursS;
       }
       // Checks for change of the date
-      dateS = rtc.getDateStr();
+      dateS = rtc.getDate();
       delay(10);
       if ( currentDate != dateS) {
         myGLCD.setColor(255, 255, 255); // Sets color to white
         myGLCD.setFont(BigFont); // Sets font to big
-        myGLCD.print(rtc.getDateStr(), 153, 7);
+        myGLCD.printNumI(rtc.getDate(), 153, 7);
       }
       // Checks for change of the temperature
-      temperature = rtc.getTemp();
+      temperature = rtc.getTemperature();
       delay(10);
       if ( currentTemperature != temperature ) {
         myGLCD.setColor(255, 255, 255); // Sets color to white
@@ -142,7 +145,7 @@ void loop() {
         currentTemperature = temperature;
       }
       delay(10);
-      currentClock = rtc.getTimeStr();
+      currentClock = rtc.getHour(h12, PM);
     }
     // Checks whether the screen has been touched
     if (myTouch.dataAvailable()) {
@@ -365,7 +368,7 @@ void loop() {
   
   // Alarm activation
   if (alarmNotSet == false) {
-    if (alarmString == rtc.getTimeStr()) {
+    if (alarmString == rtc.getHour(h12, PM)) {
       myGLCD.clrScr();
       mp3.setVolume(25);
       mp3.playTrackByIndexNumber(1);
@@ -411,9 +414,9 @@ void drawHomeScreen() {
   myGLCD.setBackColor(0, 0, 0); // Sets the background color of the area where the text will be printed to black
   myGLCD.setColor(255, 255, 255); // Sets color to white
   myGLCD.setFont(BigFont); // Sets font to big
-  myGLCD.print(rtc.getDateStr(), 153, 7);
+  myGLCD.print(rtc.getDate());
   myGLCD.print("T:", 7, 7);
-  myGLCD.printNumI(rtc.getTemp(), 39, 7);
+  myGLCD.print(rtc.getTemperature(), 39, 7);
   myGLCD.print("C", 82, 7);
   myGLCD.setFont(SmallFont);
   myGLCD.print("o", 74, 5);
@@ -581,9 +584,9 @@ void trackPlayTime() {
 }
 
 void printClock(int x, int y) {
-  if ( currentClock != rtc.getTimeStr()) {
-    myGLCD.print(rtc.getTimeStr(), x, y);
-    currentClock = rtc.getTimeStr();
+  if ( currentClock != rtc.getHour(h12, PM)) {
+    myGLCD.print(rtc.getHour(h12, PM), x, y);
+    currentClock = rtc.getHour(h12, PM);
   }
 }
 
@@ -599,7 +602,7 @@ void drawColon() {
 }
 
 void drawHomeClock() {
-  timeString = rtc.getTimeStr();
+  timeString = rtc.getHour(h12, PM);
   currentHours = timeString.substring(0, 2);
   currentMinutes = timeString.substring(3, 5);
   currentSeconds = timeString.substring(6, 8);

@@ -54,7 +54,9 @@ uint16_t identifier, oldcolor, currentcolor;
 uint8_t Orientation = 1;    // Landscape orientaion is default
 char currentPage, playStatus;
 String alarmString = "";
-int pos_X; //
+// Common start points for a Graphic block of elements
+int pos_X;
+int pos_Y;
 
 // Assign human-readable names to some common 16-bit color values:
 #define BLACK           0x0000      /*   0,   0,   0 */
@@ -80,8 +82,13 @@ int pos_X; //
 // Real Time Clock instance
 DS3231 rtc;
 bool Century = false;
-int DoW;
-String day_Of_The_Week = "Day of the week";
+byte DoW;
+String day_Of_The_Week = "";
+bool h12 = false;
+bool PM = false;
+byte currentHours;
+byte currentMinutes;
+byte currentSeconds;
 
 
 // Show Serial info Screen
@@ -359,11 +366,14 @@ void drawHomeScreen() {
   } else tft.print('1');
   tft.setCursor(pos_X + 78, 7);
   tft.print(rtc.getYear());
+  tft.setTextColor(YELLOW);
+  tft.setCursor(pos_X - 6, 24);
+  tft.print(day_Of_The_Week);
 
   if (alarmString == "" ) {
     tft.setTextSize(2);
     tft.setTextColor(GREEN);
-    tft.setCursor ((tft.width() / 2) - 85, 299);
+    tft.setCursor ((tft.width() / 2) - 90, 299);
     tft.print("by Roman Yushchyk");
   }
   else {
@@ -376,7 +386,7 @@ void drawHomeScreen() {
   }
   //  drawMusicPlayerButton();
   //   drawAlarmButton();
-  //    drawHomeClock();
+  drawHomeClock();
 }
 
 void drawMusicPlayerButton() {
@@ -386,33 +396,94 @@ void drawMusicPlayerButton() {
 void drawAlarmButton() {
 
 }
-//
-//void drawHomeClock() {
-//  currentHours = rtc.getHour();
-//  currentMinutes = rtc.getMinute();
-//  currentSeconds = rtc.getSecond();
-//  tft.setTextSize(2);
-//  tft.setTextColor(GREEN);
-//  tft.setCursor(224, 50);
-//  tft.print(currentSeconds);
-//  tft.setCursor(128, 50);
-//  tft.print(currentMinutes);
-//  tft.setCursor( 32, 50);
-//  tft.print(currentHours);
-//  drawColon();
-//}
-//
-//
-//void drawColon() {
-//  myGLCD.setColor(0, 255, 0);
-//  myGLCD.fillCircle (112, 65, 4);
-//  myGLCD.setColor(0, 255, 0);
-//  myGLCD.fillCircle (112, 85, 4);
-//  myGLCD.setColor(0, 255, 0);
-//  myGLCD.fillCircle (208, 65, 4);
-//  myGLCD.setColor(0, 255, 0);
-//  myGLCD.fillCircle (208, 85, 4);
-//}
+
+
+void set_Clock(byte h, byte m, byte s) {
+
+  byte newHour = h;
+  byte newMinutes = m;
+  byte newSeconds = s;
+  if ((newHour != "") && (newMinutes != "") && (newSeconds != "")) {
+    rtc.setHour(newHour);
+    rtc.setMinute(newMinutes);
+    rtc.setSecond(newSeconds);
+  }
+}
+
+
+void draw_Column(int x, int y1, int y2,byte c){
+  // Draw a top dot divider
+  tft.drawPixel(x + 2, y1, c);
+  tft.drawPixel(x + 1, y1 + 1, c);
+  tft.drawPixel(x + 2, y1 + 1, c);
+  tft.drawPixel(x + 3, y1 + 1, c);
+  tft.drawPixel(x, 69, c);
+  tft.drawPixel(x + 1, y1 + 2, c);
+  tft.drawPixel(x + 2, y1 + 2, c);
+  tft.drawPixel(x + 3, y1 + 2, c);
+  tft.drawPixel(x + 4, y1 + 2, c);
+  tft.drawPixel(x, y1 + 3, c);
+  tft.drawPixel(x + 1, y1 + 3, c);
+  tft.drawPixel(x + 2, y1 + 3, c);
+  tft.drawPixel(x + 3, y1 + 3, c);
+  tft.drawPixel(x + 4, y1 + 3, c);
+  tft.drawPixel(x + 1, 71, c);
+  tft.drawPixel(x + 2, 71, c);
+  tft.drawPixel(x + 3, 71, c);
+  tft.drawPixel(x + 2, 72, c);
+  // Draw a bottom dot divider
+  tft.drawPixel(x + 2, y2, c);
+  tft.drawPixel(x + 1, y2 + 1, c);
+  tft.drawPixel(x + 2, y2 + 1, c);
+  tft.drawPixel(x + 3, y2 + 1, c);
+  tft.drawPixel(x, y2 + 2, c);
+  tft.drawPixel(x + 1, y2 + 2, c);
+  tft.drawPixel(x + 2, y2 + 2, c);
+  tft.drawPixel(x + 3, y2 + 2, c);
+  tft.drawPixel(x + 4, y2 + 2, c);
+  tft.drawPixel(x, y2 + 3, c);
+  tft.drawPixel(x + 1, y2 + 3, c);
+  tft.drawPixel(x + 2, y2 + 3, c);
+  tft.drawPixel(x + 3, y2 + 3, c);
+  tft.drawPixel(x + 4, y2 + 3, c);
+  tft.drawPixel(x + 1, y2 + 4, c);
+  tft.drawPixel(x + 2, y2 + 4, c);
+  tft.drawPixel(x + 3, y2 + 4, c);
+  tft.drawPixel(x + 2, y2 + 5, c);
+ }
+
+
+void drawHomeClock() {
+  // Setting clock to 24 HR mode if h12 is false
+  rtc.setClockMode(h12);
+  set_Clock(8, 10, 10);
+  // Getting time
+  currentHours = (rtc.getHour(h12, PM));
+  currentMinutes = rtc.getMinute();
+  currentSeconds = rtc.getSecond();
+  // Clock size and color
+  tft.setTextSize(10); // Letter size = 65
+  tft.setTextColor(GREEN);
+  // Object group beginniing
+  pos_X = 40;
+  // If Hours is a double digit
+  if ((currentHours >= 10) && (currentHours <= 12)) {
+    tft.setCursor(pos_X, 50);
+    tft.print(currentHours);
+  }
+  else {
+    tft.setCursor(pos_X + 65, 50);
+    tft.print(currentHours);
+  }
+  draw_Column(170, 67, 97, GREEN);
+
+  tft.setCursor(pos_X + 140 , 50);
+  tft.print(currentMinutes);
+  tft.setCursor(pos_X + 280, 50);
+  tft.print(currentSeconds);
+  }
+ 
+
 
 void setup() {
 
@@ -427,7 +498,7 @@ void setup() {
 
   // Get current day of the week froom RTC
   DoW = rtc.getDoW();
-  
+
   // Day of the week switch function
   switch (DoW) {
     case 0:
@@ -453,16 +524,22 @@ void setup() {
       break;
   }
 
-  currentPage = 0; // Boot in a Home Screen mode
-  if (currentPage == 0) {
-    drawHomeScreen();
-  }
+  // Boot in a Home Screen mode
+  currentPage = 0;
+  drawHomeScreen();
+
 
   //paint_Setup();
 }
 
 void loop() {
   //paint_Loop();
+  if (currentPage == 0)
+  {
+    if (currentHours != (rtc.getHour(h12, PM), DEC)) {
+      // tft.drawRect();
+    }
+  }
   touch_Screen_Read();
 }
 
