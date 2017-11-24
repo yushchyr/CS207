@@ -4,6 +4,9 @@
   Alarm clock
 */
 // Intialisation
+#include <Wire.h>
+#include <BY8001.h>
+#include <DS3231.h>
 #include <Adafruit_GFX.h>    // Core graphics library
 #include <MCUFRIEND_kbv.h>
 MCUFRIEND_kbv tft;       // hard-wired for UNO shields anyway.
@@ -12,36 +15,47 @@ MCUFRIEND_kbv tft;       // hard-wired for UNO shields anyway.
 #undef __FlashStringHelper::F(string_literal)
 #define F(string_literal) string_literal
 #endif
+
 // TFT Shield pinout
 uint8_t YP = A1;  // must be an analog pin, use "An" notation!
 uint8_t XM = A2;  // must be an analog pin, use "An" notation!
 uint8_t YM = 7;   // can be a digital pin
 uint8_t XP = 6;   // can be a digital pin
 uint8_t SwapXY = 0;
+
 // TFT Shield corner touch points values
 uint16_t TS_LEFT = 920;
 uint16_t TS_RT  = 150;
 uint16_t TS_TOP = 940;
 uint16_t TS_BOT = 120;
-uint16_t xpos, ypos;  //screen coordinates
+volatile uint16_t xpos = 0, ypos = 0;  //screen coordinates
 char *name = "Unknown controller";
 // For better pressure precision, we need to know the resistance
 // between X+ and X- Use any multimeter to read it
 // For the one we're using, its 300 ohms across the X plate
+
 // Touch screen initialisation
 TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
+
 // Touch point initialisation
 TSPoint tp;
+
 // Minimum and maximum pressure input range
 #define MINPRESSURE 20
 #define MAXPRESSURE 1000
+
 // Swap function prototype
 #define SWAP(a, b) {uint16_t tmp = a; a = b; b = tmp;}
+
 // Screen  variables
 int16_t BOXSIZE;
 int16_t PENRADIUS = 3;
 uint16_t identifier, oldcolor, currentcolor;
-uint8_t Orientation = 0;    //PORTRAIT
+uint8_t Orientation = 1;    // Landscape orientaion is default
+char currentPage, playStatus;
+String alarmString = "";
+int pos_X; //
+
 // Assign human-readable names to some common 16-bit color values:
 #define BLACK           0x0000      /*   0,   0,   0 */
 #define Navy            0x000F      /*   0,   0, 128 */
@@ -63,8 +77,15 @@ uint8_t Orientation = 0;    //PORTRAIT
 #define GreenYellow     0xAFE5      /* 173, 255,  47 */
 #define Pink            0xF81F
 
-void show_Serial(void)
-{
+// Real Time Clock instance
+DS3231 rtc;
+bool Century = false;
+int DoW;
+String day_Of_The_Week = "Day of the week";
+
+
+// Show Serial info Screen
+void show_Serial(void) {
   Serial.print(F("Found "));
   Serial.print(name);
   Serial.println(F(" LCD driver"));
@@ -80,8 +101,8 @@ void show_Serial(void)
   Serial.println("YM=" + String(YM)  + " XP=" + String(XP));
 }
 
-void show_tft(void)
-{
+// Show TFT info Screen
+void show_tft(void) {
   tft.setCursor(0, 0);
   tft.setTextSize(2);
   tft.print(F("Found "));
@@ -122,25 +143,10 @@ void show_tft(void)
   }
 }
 
-void paint_Setup() {
-  show_tft();
-  BOXSIZE = tft.width() / 6;
-  tft.fillScreen(BLACK);
-  tft.fillRect(0, 0, BOXSIZE, BOXSIZE, RED);
-  tft.fillRect(BOXSIZE, 0, BOXSIZE, BOXSIZE, YELLOW);
-  tft.fillRect(BOXSIZE * 2, 0, BOXSIZE, BOXSIZE, GREEN);
-  tft.fillRect(BOXSIZE * 3, 0, BOXSIZE, BOXSIZE, CYAN);
-  tft.fillRect(BOXSIZE * 4, 0, BOXSIZE, BOXSIZE, BLUE);
-  tft.fillRect(BOXSIZE * 5, 0, BOXSIZE, BOXSIZE, MAGENTA);
-  tft.drawRect(0, 0, BOXSIZE, BOXSIZE, WHITE);
-  currentcolor = RED;
-  delay(1000);
-}
-
+// Touch Screen Read
 void touch_Screen_Read() {
-
+  // Pressure point read
   tp = ts.getPoint();   //tp.x, tp.y are ADC values
-
   // if sharing pins, you'll need to fix the directions of the touchscreen pins
   pinMode(XM, OUTPUT);
   pinMode(YP, OUTPUT);
@@ -177,6 +183,22 @@ void touch_Screen_Read() {
     }
   }
 }
+
+void paint_Setup() {
+  show_tft();
+  BOXSIZE = tft.width() / 6;
+  tft.fillScreen(BLACK);
+  tft.fillRect(0, 0, BOXSIZE, BOXSIZE, RED);
+  tft.fillRect(BOXSIZE, 0, BOXSIZE, BOXSIZE, YELLOW);
+  tft.fillRect(BOXSIZE * 2, 0, BOXSIZE, BOXSIZE, GREEN);
+  tft.fillRect(BOXSIZE * 3, 0, BOXSIZE, BOXSIZE, CYAN);
+  tft.fillRect(BOXSIZE * 4, 0, BOXSIZE, BOXSIZE, BLUE);
+  tft.fillRect(BOXSIZE * 5, 0, BOXSIZE, BOXSIZE, MAGENTA);
+  tft.drawRect(0, 0, BOXSIZE, BOXSIZE, WHITE);
+  currentcolor = RED;
+  delay(1000);
+}
+
 void paint_Loop() {
 
   // are we in top color box area ?
@@ -222,7 +244,6 @@ void paint_Loop() {
     tft.fillRect(0, BOXSIZE, tft.width(), tft.height() - BOXSIZE, BLACK);
   }
 }
-
 
 void TFT_Setup() {
 
@@ -299,28 +320,149 @@ void TFT_Setup() {
     case 3: SWAP(TS_RT, TS_BOT); SWAP(TS_RT, TS_LEFT); break;
   }
 
-  Serial.begin(9600);
   ts = TouchScreen(XP, YP, XM, YM, 300);     //call the constructor AGAIN with new values.
   tft.begin(identifier);
   show_Serial();
   tft.setRotation(Orientation);
-  tft.fillScreen(BLACK);
 }
 
-void main_Screen() {
+void drawHomeScreen() {
+  // Print temperature in a left top corner
+  tft.fillScreen(BLACK); // Sets the background color of the area where the text will be printed to black
+  tft.setTextColor(WHITE); // Sets color to white
+  tft.setTextSize(2); // Sets font to big
+  pos_X = 7;
+  tft.setCursor(pos_X, 7);
+  tft.print("T:");
+  tft.setCursor(pos_X + 25, 7);
+  tft.print(rtc.getTemperature());
+  tft.setTextSize(1);
+  tft.setCursor(pos_X + 85, 3);
+  tft.print('o');
+  tft.setTextSize(2);
+  tft.setCursor(pos_X + 94, 7);
+  tft.print("C");
+  pos_X = tft.width() - 107;
+  tft.setCursor(pos_X, 7);
+  tft.print(rtc.getMonth(Century), DEC);
+  tft.setCursor(pos_X + 18 , 7);
+  tft.print(".");
+  tft.setCursor(pos_X + 28, 7);
+  tft.print(rtc.getDate(), DEC);
+  tft.setCursor(pos_X + 48 , 7);
+  tft.print('.');
+  tft.setCursor(pos_X + 58, 7);
+  tft.print("2");
+  tft.setCursor(pos_X + 68, 7);
+  if (Century == false) {
+    tft.print('0');
+  } else tft.print('1');
+  tft.setCursor(pos_X + 78, 7);
+  tft.print(rtc.getYear());
+
+  if (alarmString == "" ) {
+    tft.setTextSize(2);
+    tft.setTextColor(GREEN);
+    tft.setCursor ((tft.width() / 2) - 85, 299);
+    tft.print("by Roman Yushchyk");
+  }
+  else {
+    tft.setTextColor(GREEN);
+    tft.setTextSize(2);
+    tft.setCursor((tft.width() / 2) - 75, 280);
+    tft.print("Alarm set for: ");
+    tft.setCursor((tft.width() / 2) - 75 , 299);
+    tft.print(alarmString);
+  }
+  //  drawMusicPlayerButton();
+  //   drawAlarmButton();
+  //    drawHomeClock();
+}
+
+void drawMusicPlayerButton() {
 
 }
 
-void setup()
-{
+void drawAlarmButton() {
+
+}
+//
+//void drawHomeClock() {
+//  currentHours = rtc.getHour();
+//  currentMinutes = rtc.getMinute();
+//  currentSeconds = rtc.getSecond();
+//  tft.setTextSize(2);
+//  tft.setTextColor(GREEN);
+//  tft.setCursor(224, 50);
+//  tft.print(currentSeconds);
+//  tft.setCursor(128, 50);
+//  tft.print(currentMinutes);
+//  tft.setCursor( 32, 50);
+//  tft.print(currentHours);
+//  drawColon();
+//}
+//
+//
+//void drawColon() {
+//  myGLCD.setColor(0, 255, 0);
+//  myGLCD.fillCircle (112, 65, 4);
+//  myGLCD.setColor(0, 255, 0);
+//  myGLCD.fillCircle (112, 85, 4);
+//  myGLCD.setColor(0, 255, 0);
+//  myGLCD.fillCircle (208, 65, 4);
+//  myGLCD.setColor(0, 255, 0);
+//  myGLCD.fillCircle (208, 85, 4);
+//}
+
+void setup() {
+
+  // Begin serial
+  Serial.begin(9600);
+
+  // Begin wire library instamnce for Real Time Clock
+  Wire.begin();
+
+  // Setup TFT screen
   TFT_Setup();
-  // main_Screen();
-  paint_Setup();
+
+  // Get current day of the week froom RTC
+  DoW = rtc.getDoW();
+  
+  // Day of the week switch function
+  switch (DoW) {
+    case 0:
+      day_Of_The_Week = "Sunday";
+      break;
+    case 1:
+      day_Of_The_Week = "Monday";
+      break;
+    case 2:
+      day_Of_The_Week = "Tuesday";
+      break;
+    case 3:
+      day_Of_The_Week = "Wednesday";
+      break;
+    case 4:
+      day_Of_The_Week = "Thursday";
+      break;
+    case 5:
+      day_Of_The_Week = "Friday";
+      break;
+    case 6:
+      day_Of_The_Week = "Saturday";
+      break;
+  }
+
+  currentPage = 0; // Boot in a Home Screen mode
+  if (currentPage == 0) {
+    drawHomeScreen();
+  }
+
+  //paint_Setup();
 }
 
-void loop()
-{
+void loop() {
+  //paint_Loop();
   touch_Screen_Read();
-  paint_Loop();
 }
 

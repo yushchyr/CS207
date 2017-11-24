@@ -17,7 +17,7 @@ UTFT     myGLCD(SSD1289, 38, 39, 40, 41); //Parameters should be adjusted to you
 URTouch  myTouch( 6, 5, 4, 3, 2);
 SoftwareSerial mp3Serial(11, 10);  // RX, TX
 BY8001 mp3;  // creating an instance of class BY8001 and call it 'mp3'
-DS3231  rtc(SDA, SCL);
+DS3231  rtc();
 //==== Defining Fonts
 extern uint8_t SmallFont[];
 extern uint8_t BigFont[];
