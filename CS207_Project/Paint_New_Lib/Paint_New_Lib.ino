@@ -468,10 +468,7 @@ void drawHomeClock() {
   // Setting clock to 24 HR mode if h12 is false
   rtc.setClockMode(h12);
   
-  // Getting time
-  currentHours = (rtc.getHour(h12, PM));
-  currentMinutes = rtc.getMinute();
-  currentSeconds = rtc.getSecond();
+ 
   // Clock size and color
   tft.setTextSize(10); // Letter size = 65
   tft.setTextColor(GREEN);
@@ -483,33 +480,47 @@ void drawHomeClock() {
     tft.setCursor(pos_X, 50);
     tft.print(currentHours);
   }
-  else {
-    if((currentMinutes >= 10) && (currentSeconds >= 10)){
-    pos_X = 10;
-    }else pos_X = 60;
-    tft.setCursor(pos_X + 65, 50);
-    tft.print(currentHours);
+  else { // If Hour is a single digit
+    if((currentMinutes >= 10) && (currentSeconds >= 10)){ // If Hour is a single digit, but Minuttes and Seconds are both a DOUBLE DIGIT number
+    pos_X = 10; // Set Position of a group
+    }else pos_X = 60; // In any ther case set position to this
+    tft.setCursor(pos_X + 65, 50); // Set cursor
+    tft.print(currentHours); // Print curent hours
   }
-  
+
+  // Draw column
   draw_Column(pos_X + 130, 67, 97, GREEN);
 
-  if (currentMinutes < 10) {
-    tft.setCursor(pos_X + 145, 50);
-    tft.print(currentMinutes);
+  if (currentMinutes < 10) { // If curent minutes are less than 1 - 9
+
+currentHours = (rtc.getHour(h12, PM));
+  currentMinutes = rtc.getMinute();
     
+    tft.setCursor(pos_X + 145, 50); // Set cursor
+    tft.print(currentMinutes); // Print minutes
+    
+  // Draw column    
     draw_Column(pos_X + 205, 67, 97, GREEN);
-    
-    tft.setCursor(pos_X + 220, 50);
-    tft.print(currentSeconds);
+    if(currentSeconds != rtc.getSecond()){
+    tft.setCursor(pos_X + 220, 50); // Set cursor
+    tft.print(currentSeconds); // Print Seconds
+    }
   }
   else {
+    if(currentMinutes != rtc.getMinute()){
+      currentMinutes = rtc.getMinute();
       tft.setCursor(pos_X + 140 , 50);
       tft.print(currentMinutes);
-
-      draw_Column(pos_X + 263, 67, 97, GREEN);
+    }
       
-      tft.setCursor(pos_X + 280, 50);
-      tft.print(currentSeconds);
+  // Draw column
+      draw_Column(pos_X + 263, 67, 97, GREEN);
+
+      if(currentSeconds != rtc.getSecond()){
+          currentSeconds = rtc.getSecond();// Getting new Seconds
+          tft.setCursor(pos_X + 280, 50); // Set cursor
+          tft.print(currentSeconds); // Print Seconds
+      }
   }
  }
  
