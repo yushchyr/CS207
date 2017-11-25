@@ -85,7 +85,7 @@ bool Century = false;
 byte DoW;
 String day_Of_The_Week = "";
 bool h12 = true;
-bool PM = true;
+bool PM;
 byte currentHours;
 byte currentMinutes;
 byte currentSeconds;
@@ -344,13 +344,11 @@ void drawAlarmButton() {
 }
 
 
-void set_Clock(byte h, byte m, byte s, bool f, bool p) {
+void set_Clock(byte h, byte m, byte s) {
 
   byte newHour = h;
   byte newMinutes = m;
   byte newSeconds = s;
-  bool h12 = f;
-  bool PM = p;
   if ((newHour != "") && (newMinutes != "") && (newSeconds != "")) {
     rtc.setHour(newHour);
     rtc.setMinute(newMinutes);
@@ -425,26 +423,25 @@ void drawHomeClock() {
 
   tft.setCursor(pos_X, pos_Y); // Set cursor
 
-  if (currentHours != rtc.getHour(h12)) { // If Hours update
+  if (currentHours != rtc.getHour(h12, PM)) { // If Hours update
 
     if (h12 == false) { // If clock in 24 hours format
 
-      if ((rtc.getHour(h12) >= 10)) { // If Hours is a double digit in 24 hours mode
-        tft.setCursor(pos_X + 10, pos_Y);
-        tft.fillRect(pos_X + 20, pos_Y, pos_X + 65, pos_Y + 20, BLACK);
-        currentHours = rtc.getHour(h12); // Get new current time
+      if ((rtc.getHour(h12, PM) >= 10)) { // If Hours is a double digit in 24 hours mode
+        tft.fillRect(pos_X, pos_Y, pos_X + 75, pos_Y + 20, WHITE);
+        currentHours = rtc.getHour(h12, PM); // Get new current time
         tft.print(currentHours); // Print curent hours
       }
-      else if (rtc.getHour(h12) == 0) {
-        tft.fillRect(pos_X + 10, pos_Y, pos_X + 75, pos_Y + 20, BLACK);
-        currentHours = rtc.getHour(h12); // Get new current time
-        tft.setCursor(pos_X + 70, pos_Y);
+      else if (rtc.getHour(h12, PM) == 0) {
+        tft.fillRect(pos_X, pos_Y, pos_X + 75, pos_Y + 20, WHITE);
+        currentHours = rtc.getHour(h12, PM); // Get new current time
+        tft.setCursor(pos_X + 60, pos_Y);
         tft.print(currentHours); // Print curent hours
       }
-      else if ((rtc.getHour(h12) > 0) && (rtc.getHour(h12) < 10)) { // If Hours is a single digit in 24 hours mode
+      else if ((rtc.getHour(h12, PM) > 0) && (currentHours < 10)) { // If Hours is a single digit in 24 hours mode
         tft.setCursor(pos_X + 65, pos_Y);
-        tft.fillRect(pos_X + 65, pos_Y, pos_X + 15, pos_Y + 20, BLACK);
-        currentHours = rtc.getHour(h12);
+        tft.fillRect(pos_X + 65, pos_Y, pos_X + 10, pos_Y + 20, WHITE);
+        currentHours = rtc.getHour(h12, PM);
         tft.print(currentHours); // Print curent hours
       }
 
@@ -452,10 +449,9 @@ void drawHomeClock() {
 
     else if (h12 = true) { // If clock in 12 hours format
 
-      if ((rtc.getHour(h12) >= 10) && (rtc.getHour(h12) <= 11)) { // If Hours is a double digit in 24 hours mode
-        tft.setCursor(pos_X + 10, pos_Y);
-        tft.fillRect(pos_X + 20, pos_Y, pos_X + 65, pos_Y + 20, BLACK);
-        currentHours = rtc.getHour(h12); // Get new current time
+      if ((rtc.getHour(h12, PM) >= 10)) { // If Hours is a double digit in 24 hours mode
+        tft.fillRect(pos_X, pos_Y, pos_X + 75, pos_Y + 20, BLACK);
+        currentHours = rtc.getHour(h12, PM); // Get new current time
         tft.print(currentHours); // Print curent hours
         tft.setCursor(pos_X - 30, pos_Y);
         tft.setTextSize(3);
@@ -469,11 +465,11 @@ void drawHomeClock() {
           tft.print("AM");
         }
       }
-      else if (rtc.getHour(h12) == 12) {
+      else if (rtc.getHour(h12, PM) == 12) {
         PM = !PM;
-        tft.setCursor(pos_X + 10, pos_Y);
-        tft.fillRect(pos_X + 20, pos_Y, pos_X + 65, pos_Y + 20, BLACK);
-        currentHours = rtc.getHour(h12); // Get new current time
+        tft.fillRect(pos_X, pos_Y, pos_X + 75, pos_Y + 20, BLACK);
+        currentHours = rtc.getHour(h12, PM); // Get new current time
+        tft.setCursor(pos_X + 60, pos_Y);
         tft.print(currentHours); // Print curent hours
         tft.setCursor(pos_X - 30, pos_Y);
         tft.setTextSize(3);
@@ -487,22 +483,22 @@ void drawHomeClock() {
           tft.print("AM");
         }
       }
-      else if ((rtc.getHour(h12) > 0) && (rtc.getHour(h12) < 10)) { // If Hours is a single digit in 24 hours mode
+      else if ((rtc.getHour(h12, PM) > 0) && (currentHours < 10)) { // If Hours is a single digit in 24 hours mode
         tft.setCursor(pos_X + 65, pos_Y);
-        tft.fillRect(pos_X + 65, pos_Y, pos_X + 15, pos_Y + 20, BLACK);
-        currentHours = rtc.getHour(h12);
+        tft.fillRect(pos_X + 65, pos_Y, pos_X + 15, pos_Y + 20, WHITE);
+        currentHours = rtc.getHour(h12, PM);
         tft.print(currentHours); // Print curent hours
         tft.setCursor(pos_X - 30, pos_Y);
         tft.setTextSize(3);
         tft.setTextColor(RED);
-
+      
         Serial.print(PM);
-        if (PM) {
+        if(PM){
           tft.fillRect(pos_X - 30, pos_Y, pos_X - 20, pos_Y - 29, BLACK);
           tft.print("PM");
         }
         else {
-          tft.fillRect(pos_X - 30, pos_Y, pos_X - 20, pos_Y - 29, BLACK);
+          tft.fillRect(pos_X - 30, pos_Y, pos_X - 20, pos_Y - 29, WHITE);
           tft.print("AM");
         }
       }
@@ -510,12 +506,10 @@ void drawHomeClock() {
     // Draw column
     draw_Column(pos_X + 130, 67, 97, GREEN);
   }
-
-
-  // Minutes update
+  //
   //    if (currentMinutes < 10) { // If curent minutes are less than 1 - 9
-  //      if (currentHours != (rtc.getHour(h12))) {
-  //        currentHours = (rtc.getHour(h12)); // Get new hour
+  //      if (currentHours != (rtc.getHour(h12, PM))) {
+  //        currentHours = (rtc.getHour(h12, PM)); // Get new hour
   //      }
   //      if (currentMinutes != rtc.getMinute()) {
   //        currentMinutes = rtc.getMinute(); // Getting new minutes
@@ -650,12 +644,11 @@ void setup() {
   // Boot in a Home Screen mode
   currentPage = 0;
 
-
-  // Initiation of RTC objects;
-  h12 = false; // True for 24 hr
-  PM = true; // It is evening if PM iis true
-  set_Clock(, 33, 55, h12, PM);
-  set_Date(11, 25, 17, 7); // Last one is the day of the week 1 = Sunday
+  // Setting time
+  // To set h12 go to Initiation of RTC objects;
+  // To set PM go to Initiation of RTC objects;
+  set_Clock(11, 59, 55 );
+  set_Date(11, 24, 17, 6); // Last one is the day of the week 1 = Sunday
   drawHomeScreen();
 
 
@@ -667,9 +660,7 @@ void loop() {
   if (currentPage == 0)
   {
     drawHomeClock();
-    delay(111);
   }
-
   touch_Screen_Read();
 }
 
