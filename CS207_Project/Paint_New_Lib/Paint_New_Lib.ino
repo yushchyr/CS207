@@ -434,18 +434,33 @@ void drawHomeClock() {
         tft.fillRect(pos_X + 20, pos_Y, pos_X + 65, pos_Y + 20, BLACK);
         currentHours = rtc.getHour(h12); // Get new current time
         tft.print(currentHours); // Print curent hours
+        tft.setCursor(pos_X - 30, pos_Y);
+        tft.setTextSize(3);
+        tft.setTextColor(RED);
+        tft.fillRect(pos_X - 30, pos_Y, pos_X - 20, pos_Y - 29, BLACK);
+        tft.print("24H");
       }
       else if (rtc.getHour(h12) == 0) {
         tft.fillRect(pos_X + 10, pos_Y, pos_X + 75, pos_Y + 20, BLACK);
         currentHours = rtc.getHour(h12); // Get new current time
         tft.setCursor(pos_X + 70, pos_Y);
         tft.print(currentHours); // Print curent hours
+        tft.setCursor(pos_X - 30, pos_Y);
+        tft.setTextSize(3);
+        tft.setTextColor(RED);
+        tft.fillRect(pos_X - 30, pos_Y, pos_X - 20, pos_Y - 29, BLACK);
+        tft.print("24H");
       }
       else if ((rtc.getHour(h12) > 0) && (rtc.getHour(h12) < 10)) { // If Hours is a single digit in 24 hours mode
         tft.setCursor(pos_X + 65, pos_Y);
         tft.fillRect(pos_X + 65, pos_Y, pos_X + 15, pos_Y + 20, BLACK);
         currentHours = rtc.getHour(h12);
         tft.print(currentHours); // Print curent hours
+        tft.setCursor(pos_X - 30, pos_Y);
+        tft.setTextSize(3);
+        tft.setTextColor(RED);
+        tft.fillRect(pos_X - 30, pos_Y, pos_X - 20, pos_Y - 29, BLACK);
+        tft.print("24H");
       }
 
     }
@@ -512,7 +527,7 @@ void drawHomeClock() {
   }
 
 
-  // Minutes update
+  // Minutes updateg
   //    if (currentMinutes < 10) { // If curent minutes are less than 1 - 9
   //      if (currentHours != (rtc.getHour(h12))) {
   //        currentHours = (rtc.getHour(h12)); // Get new hour
@@ -653,8 +668,8 @@ void setup() {
 
   // Initiation of RTC objects;
   h12 = false; // True for 24 hr
-  PM = true; // It is evening if PM iis true
-  set_Clock(, 33, 55, h12, PM);
+  PM = false; // It is evening if PM iis true
+  set_Clock(23, 59, 55, h12, PM);
   set_Date(11, 25, 17, 7); // Last one is the day of the week 1 = Sunday
   drawHomeScreen();
 
