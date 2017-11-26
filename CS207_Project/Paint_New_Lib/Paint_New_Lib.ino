@@ -550,12 +550,12 @@ void drawHomeClock() {
   
 // Draw seconds
   if (currentSeconds != rtc.getSecond()) {
-    if((rtc.getSecond() >= 0) && (rtc.getSecond() <= 10)){
+    if((rtc.getSecond() >= 0) && (rtc.getSecond() < 10)){
     currentSeconds = rtc.getSecond(); // Getting new Seconds
+    tft.fillRect(pos_X + 285, pos_Y, pos_X + 75, pos_Y + 20, BLACK);
     tft.setCursor(pos_X + 285, pos_Y);
     tft.print('0');
     tft.setCursor(pos_X + 285 + 60, pos_Y); // Set cursor
-    tft.fillRect(pos_X + 285, pos_Y, pos_X + 75, pos_Y + 20, BLACK);
     tft.print(currentSeconds); // Print Seconds
     }
     else{
