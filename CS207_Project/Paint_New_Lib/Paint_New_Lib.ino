@@ -87,10 +87,10 @@ byte oldDoW;
 String day_Of_The_Week = "";
 bool h12;
 bool PM;
-byte currentDate;
-byte currentHours;
-byte currentMinutes;
-byte currentSeconds;
+byte currentDate = -1;
+byte currentHours = -1;
+byte currentMinutes = -1;
+byte currentSeconds = -1;
 float temperature;
 
 
@@ -499,7 +499,7 @@ void drawHomeClock() {
           tft.print("AM");
         }
       }
-      else if ((rtc.getHour(h12) > 0) && (rtc.getHour(h12) < 10)) { // If Hours is a single digit in 24 hours mode
+      else if ((rtc.getHour(h12) >= 0) && (rtc.getHour(h12) < 10)) { // If Hours is a single digit in 24 hours mode
         tft.setCursor(pos_X + 65, pos_Y);
         tft.fillRect(pos_X + 65, pos_Y, pos_X + 15, pos_Y + 20, BLACK);
         currentHours = rtc.getHour(h12);
@@ -520,20 +520,13 @@ void drawHomeClock() {
 
 
   }
+  
   // Draw column
   draw_Column(pos_X + 130, 67, 97, GREEN);
 
   //   Minutes update
   if (currentMinutes != rtc.getMinute()) {
-    if (rtc.getMinute() == 0) {
-      currentMinutes = rtc.getMinute(); // Getting new minutes
-      tft.setTextSize(10);
-      tft.setTextColor(GREEN);
-      tft.setCursor(pos_X + 177, pos_Y); // Set cursor
-      tft.fillRect(pos_X + 145, pos_Y, pos_X + 75, pos_Y + 20, BLACK);
-      tft.print(currentMinutes); // Print minutes
-    }
-    else if ((rtc.getMinute() < 10) && (rtc.getMinute() > 0)) {
+     if ((rtc.getMinute() < 10) && (rtc.getMinute() >= 0)) {
       currentMinutes = rtc.getMinute(); // Getting new minutes
       tft.setTextSize(10);
       tft.setTextColor(GREEN);
@@ -554,12 +547,23 @@ void drawHomeClock() {
   }
   // Draw column
   draw_Column(pos_X + 265, 67, 97, GREEN);
-
+  
+// Draw seconds
   if (currentSeconds != rtc.getSecond()) {
-    currentSeconds = rtc.getSecond();// Getting new Seconds
+    if((rtc.getSecond() >= 0) && (rtc.getSecond() <= 10)){
+    currentSeconds = rtc.getSecond(); // Getting new Seconds
+    tft.setCursor(pos_X + 285, pos_Y);
+    tft.print('0');
+    tft.setCursor(pos_X + 285 + 60, pos_Y); // Set cursor
+    tft.fillRect(pos_X + 285, pos_Y, pos_X + 75, pos_Y + 20, BLACK);
+    tft.print(currentSeconds); // Print Seconds
+    }
+    else{
+    currentSeconds = rtc.getSecond(); // Getting new Seconds
     tft.setCursor(pos_X + 285, pos_Y); // Set cursor
     tft.fillRect(pos_X + 285, pos_Y, pos_X + 75, pos_Y + 20, BLACK);
     tft.print(currentSeconds); // Print Seconds
+    }
   }
 }
 
@@ -577,6 +581,14 @@ void drawMusicPlayerButton() {
   pos_Y = 150;
   tft.setAddrWindow(pos_X, pos_Y, pos_X + 64, pos_Y + 65);
   tft.pushColors(MusicPlayerButton, 4160, 1);
+}
+
+void drawPaintButton() {
+  extern const uint8_t PaintButton[4225];
+  pos_X = 207;
+  pos_Y = 150;
+  tft.setAddrWindow(pos_X, pos_Y, pos_X + 64, pos_Y + 65);
+  tft.pushColors(PaintButton, 4224, 1);
 }
 
 void drawTemp() {
@@ -684,7 +696,6 @@ void drawDayOfTheWeek() {
 }
 
 void drawAlarmStatus() {
-
   // Check if alarm is ON or OFF
   if (alarmString == "") {
     tft.setTextSize(2);
@@ -708,13 +719,14 @@ void drawHomeScreen() {
 
   //  drawMusicPlayerButton();
   //   drawAlarmButton();
-  drawAlarmStatus;
+  drawAlarmStatus();
   drawDayOfTheWeek();
   drawTemp();
   drawDate();
   drawHomeClock();
   drawAlarmButton();
   drawMusicPlayerButton();
+  drawPaintButton();
 }
 
 void setup() {
@@ -761,11 +773,11 @@ void setup() {
 
 
   // Initiation of RTC objects;
-  h12 = true; // True for 12 hr
-  PM = true; // It is evening if PM iis true
-  // set_Clock(4, 34, 44, h12, PM);
+  h12 = false; // True for 12 hr
+  PM = false; // It is evening if PM iis true
+  //set_Clock(2, 21, 54, h12, PM); // Upload time is 24s
   //set_Date(11, 5, 17, 7); // Last one is the day of the week 1 = Sunday
-  // rtc.setHour(6);
+  //rtc.setHour(1);
   //rtc.setDoW(7);
   //delay(1000);
 
@@ -778,7 +790,7 @@ void loop() {
   //paint_Loop();
   if (currentPage == 0)
   {
-    drawAlarmStatus;
+    drawAlarmStatus();
     drawDayOfTheWeek();
     drawTemp();
     drawDate();
