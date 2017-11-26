@@ -83,7 +83,6 @@ int pos_Y;
 DS3231 rtc;
 bool Century = false;
 byte DoW;
-byte oldDoW;
 String day_Of_The_Week = "";
 bool h12;
 bool PM;
@@ -564,19 +563,14 @@ void drawHomeClock() {
 }
 
 void drawAlarmButton() {
+  //tft.drawBitmap (195, 125, 65, 64, AlarmButton);
   extern const uint8_t AlarmButton[0x1040];
-  pos_X = 480 - 50 - 65;
-  pos_Y = 150;
-  tft.setAddrWindow(pos_X, pos_Y, pos_X + 64, pos_Y + 65);
-  tft.pushColors(AlarmButton, 4160, 1);
+  tft.setAddrWindow(pos_X, pos_Y, pos_X + 20 , pos_Y + 20);
+  tft.pushColors(AlarmButton, 1600, 1);
 }
 
 void drawMusicPlayerButton() {
-  extern const uint8_t MusicPlayerButton[0x1040];
-  pos_X = 50;
-  pos_Y = 150;
-  tft.setAddrWindow(pos_X, pos_Y, pos_X + 64, pos_Y + 65);
-  tft.pushColors(MusicPlayerButton, 4160, 1);
+
 }
 
 void drawTemp() {
@@ -639,53 +633,51 @@ void drawDate() {
 void drawDayOfTheWeek() {
 
   // Print day of the week
-  if (oldDoW != DoW) {
-    oldDoW = DoW;
-    tft.fillRect(369, 23, 106, 17, BLACK);
-    tft.setTextSize(2); // Sets font to big
-    pos_X = tft.width() - 107;
-    if (DoW == 1) {
-      tft.setTextColor(GREEN);
-      tft.setCursor(pos_X + 32, 24);
-      tft.print(day_Of_The_Week);
-    }
-    if (DoW == 2) {
-      tft.setTextColor(YELLOW);
-      tft.setCursor(pos_X + 32, 24);
-      tft.print(day_Of_The_Week);
-    }
-    if (DoW == 3) {
-      tft.setTextColor(YELLOW);
-      tft.setCursor(pos_X + 20, 24);
-      tft.print(day_Of_The_Week);
-    }
-    if (DoW == 4) {
-      tft.setTextColor(YELLOW);
-      tft.setCursor(pos_X - 4, 24);
-      tft.print(day_Of_The_Week);
-    }
-    if (DoW == 5) {
-      tft.setTextColor(YELLOW);
-      tft.setCursor(pos_X + 8, 24);
-      tft.print(day_Of_The_Week);
-    }
-    if (DoW == 6) {
-      tft.setTextColor(YELLOW);
-      tft.setCursor(pos_X + 32, 24);
-      tft.print(day_Of_The_Week);
-    }
-    if (DoW == 7) {
-      tft.setTextColor(GREEN);
-      tft.setCursor(pos_X + 8, 24);
-      tft.print(day_Of_The_Week);
-    }
-
+  tft.fillRect(367, 23, 108, 17, RED);
+  tft.setTextSize(2); // Sets font to big
+  pos_X = tft.width() - 107;
+  if (DoW == 1) {
+    tft.setTextColor(GREEN);
+    tft.setCursor(pos_X + 30, 24);
+    tft.print(day_Of_The_Week);
   }
+  if (DoW == 2) {
+    tft.setTextColor(YELLOW);
+    tft.setCursor(pos_X + 30, 24);
+    tft.print(day_Of_The_Week);
+  }
+  if (DoW == 3) {
+    tft.setTextColor(YELLOW);
+    tft.setCursor(pos_X + 18, 24);
+    tft.print(day_Of_The_Week);
+  }
+  if (DoW == 4) {
+    tft.setTextColor(YELLOW);
+    tft.setCursor(pos_X - 6, 24);
+    tft.print(day_Of_The_Week);
+  }
+  if (DoW == 5) {
+    tft.setTextColor(YELLOW);
+    tft.setCursor(pos_X - 6, 24);
+    tft.print(day_Of_The_Week);
+  }
+  if (DoW == 6) {
+    tft.setTextColor(YELLOW);
+    tft.setCursor(pos_X + 30, 24);
+    tft.print(day_Of_The_Week);
+  }
+  if (DoW == 7) {
+    tft.setTextColor(GREEN);
+    tft.setCursor(pos_X + 6, 24);
+    tft.print(day_Of_The_Week);
+  }
+
+
 }
 
-void drawAlarmStatus() {
-
-  // Check if alarm is ON or OFF
+void drawHomeScreen() {
+  tft.fillScreen(BLACK); // Sets the background color of the area where the text will be printed to black
+  
   if (alarmString == "") {
     tft.setTextSize(2);
     tft.setTextColor(GREEN);
@@ -700,21 +692,13 @@ void drawAlarmStatus() {
     tft.setCursor((tft.width() / 2) - 75 , 299);
     tft.print(alarmString);
   }
-}
-
-void drawHomeScreen() {
-  tft.fillScreen(BLACK); // Sets the background color of the area where the text will be printed to black
-
-
   //  drawMusicPlayerButton();
   //   drawAlarmButton();
-  drawAlarmStatus;
   drawDayOfTheWeek();
   drawTemp();
   drawDate();
   drawHomeClock();
   drawAlarmButton();
-  drawMusicPlayerButton();
 }
 
 void setup() {
@@ -766,10 +750,10 @@ void setup() {
   // set_Clock(4, 34, 44, h12, PM);
   //set_Date(11, 5, 17, 7); // Last one is the day of the week 1 = Sunday
   // rtc.setHour(6);
-  //rtc.setDoW(7);
-  //delay(1000);
-
+  rtc.setDoW(5);
+  delay(1000);
   drawHomeScreen();
+
 
   //paint_Setup();
 }
@@ -778,11 +762,11 @@ void loop() {
   //paint_Loop();
   if (currentPage == 0)
   {
-    drawAlarmStatus;
-    drawDayOfTheWeek();
-    drawTemp();
-    drawDate();
-    drawHomeClock();
+      drawDayOfTheWeek();
+      drawTemp();
+      drawDate();
+      drawHomeClock();
+      //drawAlarmButton();
   }
 
   touch_Screen_Read();
