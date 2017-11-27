@@ -57,6 +57,7 @@ String alarmString = "";
 // Common start points for a Graphic block of elements
 int pos_X;
 int pos_Y;
+bool exitButton = false;
 
 // Assign human-readable names to some common 16-bit color values:
 #define BLACK           0x0000      /*   0,   0,   0 */
@@ -82,7 +83,7 @@ int pos_Y;
 // Real Time Clock instance
 DS3231 rtc;
 bool Century = false;
-byte DoW;
+byte DoW = -1;
 byte oldDoW;
 String day_Of_The_Week = "";
 bool h12;
@@ -195,7 +196,7 @@ void touch_Screen_Read() {
 }
 
 void paint_Setup() {
-  show_tft();
+  //show_tft();
   BOXSIZE = tft.width() / 6;
   tft.fillScreen(BLACK);
   tft.fillRect(0, 0, BOXSIZE, BOXSIZE, RED);
@@ -210,51 +211,51 @@ void paint_Setup() {
 }
 
 void paint_Loop() {
+  touch_Screen_Read();
+    // are we in top color box area ?
+    if (ypos < BOXSIZE) {               //draw white border on selected color box
+      oldcolor = currentcolor;
 
-  // are we in top color box area ?
-  if (ypos < BOXSIZE) {               //draw white border on selected color box
-    oldcolor = currentcolor;
+      if (xpos < BOXSIZE) {
+        currentcolor = RED;
+        tft.drawRect(0, 0, BOXSIZE, BOXSIZE, WHITE);
+      } else if (xpos < BOXSIZE * 2) {
+        currentcolor = YELLOW;
+        tft.drawRect(BOXSIZE, 0, BOXSIZE, BOXSIZE, WHITE);
+      } else if (xpos < BOXSIZE * 3) {
+        currentcolor = GREEN;
+        tft.drawRect(BOXSIZE * 2, 0, BOXSIZE, BOXSIZE, WHITE);
+      } else if (xpos < BOXSIZE * 4) {
+        currentcolor = CYAN;
+        tft.drawRect(BOXSIZE * 3, 0, BOXSIZE, BOXSIZE, WHITE);
+      } else if (xpos < BOXSIZE * 5) {
+        currentcolor = BLUE;
+        tft.drawRect(BOXSIZE * 4, 0, BOXSIZE, BOXSIZE, WHITE);
+      } else if (xpos < BOXSIZE * 6) {
+        currentcolor = MAGENTA;
+        tft.drawRect(BOXSIZE * 5, 0, BOXSIZE, BOXSIZE, WHITE);
+      }
 
-    if (xpos < BOXSIZE) {
-      currentcolor = RED;
-      tft.drawRect(0, 0, BOXSIZE, BOXSIZE, WHITE);
-    } else if (xpos < BOXSIZE * 2) {
-      currentcolor = YELLOW;
-      tft.drawRect(BOXSIZE, 0, BOXSIZE, BOXSIZE, WHITE);
-    } else if (xpos < BOXSIZE * 3) {
-      currentcolor = GREEN;
-      tft.drawRect(BOXSIZE * 2, 0, BOXSIZE, BOXSIZE, WHITE);
-    } else if (xpos < BOXSIZE * 4) {
-      currentcolor = CYAN;
-      tft.drawRect(BOXSIZE * 3, 0, BOXSIZE, BOXSIZE, WHITE);
-    } else if (xpos < BOXSIZE * 5) {
-      currentcolor = BLUE;
-      tft.drawRect(BOXSIZE * 4, 0, BOXSIZE, BOXSIZE, WHITE);
-    } else if (xpos < BOXSIZE * 6) {
-      currentcolor = MAGENTA;
-      tft.drawRect(BOXSIZE * 5, 0, BOXSIZE, BOXSIZE, WHITE);
+      if (oldcolor != currentcolor) { //rub out the previous white border
+        if (oldcolor == RED) tft.fillRect(0, 0, BOXSIZE, BOXSIZE, RED);
+        if (oldcolor == YELLOW) tft.fillRect(BOXSIZE, 0, BOXSIZE, BOXSIZE, YELLOW);
+        if (oldcolor == GREEN) tft.fillRect(BOXSIZE * 2, 0, BOXSIZE, BOXSIZE, GREEN);
+        if (oldcolor == CYAN) tft.fillRect(BOXSIZE * 3, 0, BOXSIZE, BOXSIZE, CYAN);
+        if (oldcolor == BLUE) tft.fillRect(BOXSIZE * 4, 0, BOXSIZE, BOXSIZE, BLUE);
+        if (oldcolor == MAGENTA) tft.fillRect(BOXSIZE * 5, 0, BOXSIZE, BOXSIZE, MAGENTA);
+      }
     }
-
-    if (oldcolor != currentcolor) { //rub out the previous white border
-      if (oldcolor == RED) tft.fillRect(0, 0, BOXSIZE, BOXSIZE, RED);
-      if (oldcolor == YELLOW) tft.fillRect(BOXSIZE, 0, BOXSIZE, BOXSIZE, YELLOW);
-      if (oldcolor == GREEN) tft.fillRect(BOXSIZE * 2, 0, BOXSIZE, BOXSIZE, GREEN);
-      if (oldcolor == CYAN) tft.fillRect(BOXSIZE * 3, 0, BOXSIZE, BOXSIZE, CYAN);
-      if (oldcolor == BLUE) tft.fillRect(BOXSIZE * 4, 0, BOXSIZE, BOXSIZE, BLUE);
-      if (oldcolor == MAGENTA) tft.fillRect(BOXSIZE * 5, 0, BOXSIZE, BOXSIZE, MAGENTA);
+    // are we in drawing area ?
+    if (((ypos - PENRADIUS) > BOXSIZE) && ((ypos + PENRADIUS) < tft.height())) {
+      tft.fillCircle(xpos, ypos, PENRADIUS, currentcolor);
+    }
+    // are we in erase area ?
+    if (ypos > tft.height() - 10) {
+      // press the bottom of the screen to erase
+      tft.fillRect(0, BOXSIZE, tft.width(), tft.height() - BOXSIZE, BLACK);
     }
   }
-  // are we in drawing area ?
-  if (((ypos - PENRADIUS) > BOXSIZE) && ((ypos + PENRADIUS) < tft.height())) {
-    tft.fillCircle(xpos, ypos, PENRADIUS, currentcolor);
-  }
-  // are we in erase area ?
-  if (ypos > tft.height() - 10) {
-    // press the bottom of the screen to erase
-    tft.fillRect(0, BOXSIZE, tft.width(), tft.height() - BOXSIZE, BLACK);
-  }
-}
-
+//}
 void TFT_Setup() {
 
   uint16_t tmp;
@@ -336,10 +337,6 @@ void TFT_Setup() {
   tft.setRotation(Orientation);
 }
 
-
-
-
-
 void set_Clock(byte h, byte m, byte s, bool f, bool p) {
 
   byte newHour = h;
@@ -353,6 +350,7 @@ void set_Clock(byte h, byte m, byte s, bool f, bool p) {
     rtc.setSecond(newSeconds);
   }
 }
+
 void set_Date(int mm, int dd, int yr, int doW) {
   if ((mm != "") && (dd != "") && (yr != "") && (doW != "")) {
     rtc.setMonth(mm);
@@ -363,14 +361,13 @@ void set_Date(int mm, int dd, int yr, int doW) {
 
 }
 
-
 void draw_Column(int x, int y1, int y2, int c) {
   // Draw a top dot divider
   tft.drawPixel(x + 2, y1, c);
   tft.drawPixel(x + 1, y1 + 1, c);
   tft.drawPixel(x + 2, y1 + 1, c);
   tft.drawPixel(x + 3, y1 + 1, c);
-  tft.drawPixel(x, 69, c);
+  tft.drawPixel(x, y1 + 2, c);
   tft.drawPixel(x + 1, y1 + 2, c);
   tft.drawPixel(x + 2, y1 + 2, c);
   tft.drawPixel(x + 3, y1 + 2, c);
@@ -380,10 +377,10 @@ void draw_Column(int x, int y1, int y2, int c) {
   tft.drawPixel(x + 2, y1 + 3, c);
   tft.drawPixel(x + 3, y1 + 3, c);
   tft.drawPixel(x + 4, y1 + 3, c);
-  tft.drawPixel(x + 1, 71, c);
-  tft.drawPixel(x + 2, 71, c);
-  tft.drawPixel(x + 3, 71, c);
-  tft.drawPixel(x + 2, 72, c);
+  tft.drawPixel(x + 1, pos_Y + 21, c);
+  tft.drawPixel(x + 2, pos_Y + 21, c);
+  tft.drawPixel(x + 3, pos_Y + 21, c);
+  tft.drawPixel(x + 2, pos_Y + 22, c);
 
   // Draw a bottom dot divider
   tft.drawPixel(x + 2, y2, c);
@@ -418,7 +415,7 @@ void drawHomeClock() {
 
 
   pos_X = 35; // Object group beginniing
-  pos_Y = 50; // Object group beginniing
+  pos_Y = 60; // Object group beginniing
 
   tft.setCursor(pos_X, pos_Y); // Set cursor
 
@@ -431,7 +428,7 @@ void drawHomeClock() {
         tft.fillRect(pos_X + 20, pos_Y, pos_X + 65, pos_Y + 20, BLACK);
         currentHours = rtc.getHour(h12); // Get new current time
         tft.print(currentHours); // Print curent hours
-        tft.setCursor(pos_X - 30, pos_Y);
+        tft.setCursor(pos_X - 30, pos_Y - 6);
         tft.setTextSize(2);
         tft.setTextColor(RED);
         tft.fillRect(pos_X - 30, pos_Y, pos_X, pos_Y - 29, BLACK);
@@ -440,7 +437,7 @@ void drawHomeClock() {
       else if (rtc.getHour(h12) == 0) {
         tft.fillRect(pos_X + 10, pos_Y, pos_X + 75, pos_Y + 20, BLACK);
         currentHours = rtc.getHour(h12); // Get new current time
-        tft.setCursor(pos_X + 70, pos_Y);
+        tft.setCursor(pos_X + 70, pos_Y - 6);
         tft.print(currentHours); // Print curent hours
         tft.setCursor(pos_X - 30, pos_Y);
         tft.setTextSize(2);
@@ -520,13 +517,13 @@ void drawHomeClock() {
 
 
   }
-  
+
   // Draw column
-  draw_Column(pos_X + 130, 67, 97, GREEN);
+  draw_Column(pos_X + 130, pos_Y + 17, pos_Y + 47, GREEN);
 
   //   Minutes update
   if (currentMinutes != rtc.getMinute()) {
-     if ((rtc.getMinute() < 10) && (rtc.getMinute() >= 0)) {
+    if ((rtc.getMinute() < 10) && (rtc.getMinute() >= 0)) {
       currentMinutes = rtc.getMinute(); // Getting new minutes
       tft.setTextSize(10);
       tft.setTextColor(GREEN);
@@ -546,31 +543,31 @@ void drawHomeClock() {
     }
   }
   // Draw column
-  draw_Column(pos_X + 265, 67, 97, GREEN);
-  
-// Draw seconds
+  draw_Column(pos_X + 265, pos_Y + 17, pos_Y + 47, GREEN);
+
+  // Draw seconds
   if (currentSeconds != rtc.getSecond()) {
-    if((rtc.getSecond() >= 0) && (rtc.getSecond() < 10)){
-    currentSeconds = rtc.getSecond(); // Getting new Seconds
-    tft.fillRect(pos_X + 285, pos_Y, pos_X + 75, pos_Y + 20, BLACK);
-    tft.setCursor(pos_X + 285, pos_Y);
-    tft.print('0');
-    tft.setCursor(pos_X + 285 + 60, pos_Y); // Set cursor
-    tft.print(currentSeconds); // Print Seconds
+    if ((rtc.getSecond() >= 0) && (rtc.getSecond() < 10)) {
+      currentSeconds = rtc.getSecond(); // Getting new Seconds
+      tft.fillRect(pos_X + 285, pos_Y, pos_X + 75, pos_Y + 20, BLACK);
+      tft.setCursor(pos_X + 285, pos_Y);
+      tft.print('0');
+      tft.setCursor(pos_X + 285 + 60, pos_Y); // Set cursor
+      tft.print(currentSeconds); // Print Seconds
     }
-    else{
-    currentSeconds = rtc.getSecond(); // Getting new Seconds
-    tft.setCursor(pos_X + 285, pos_Y); // Set cursor
-    tft.fillRect(pos_X + 285, pos_Y, pos_X + 75, pos_Y + 20, BLACK);
-    tft.print(currentSeconds); // Print Seconds
+    else {
+      currentSeconds = rtc.getSecond(); // Getting new Seconds
+      tft.setCursor(pos_X + 285, pos_Y); // Set cursor
+      tft.fillRect(pos_X + 285, pos_Y, pos_X + 75, pos_Y + 20, BLACK);
+      tft.print(currentSeconds); // Print Seconds
     }
   }
 }
 
 void drawAlarmButton() {
   extern const uint8_t AlarmButton[0x1040];
-  pos_X = 480 - 50 - 65;
-  pos_Y = 150;
+  pos_X = 365;
+  pos_Y = 170;
   tft.setAddrWindow(pos_X, pos_Y, pos_X + 64, pos_Y + 65);
   tft.pushColors(AlarmButton, 4160, 1);
 }
@@ -578,7 +575,7 @@ void drawAlarmButton() {
 void drawMusicPlayerButton() {
   extern const uint8_t MusicPlayerButton[0x1040];
   pos_X = 50;
-  pos_Y = 150;
+  pos_Y = 170;
   tft.setAddrWindow(pos_X, pos_Y, pos_X + 64, pos_Y + 65);
   tft.pushColors(MusicPlayerButton, 4160, 1);
 }
@@ -586,7 +583,7 @@ void drawMusicPlayerButton() {
 void drawPaintButton() {
   extern const uint8_t PaintButton[4225];
   pos_X = 207;
-  pos_Y = 150;
+  pos_Y = 170;
   tft.setAddrWindow(pos_X, pos_Y, pos_X + 64, pos_Y + 65);
   tft.pushColors(PaintButton, 4224, 1);
 }
@@ -715,10 +712,6 @@ void drawAlarmStatus() {
 
 void drawHomeScreen() {
   tft.fillScreen(BLACK); // Sets the background color of the area where the text will be printed to black
-
-
-  //  drawMusicPlayerButton();
-  //   drawAlarmButton();
   drawAlarmStatus();
   drawDayOfTheWeek();
   drawTemp();
@@ -775,11 +768,9 @@ void setup() {
   // Initiation of RTC objects;
   h12 = false; // True for 12 hr
   PM = false; // It is evening if PM iis true
-  //set_Clock(2, 21, 54, h12, PM); // Upload time is 24s
-  //set_Date(11, 5, 17, 7); // Last one is the day of the week 1 = Sunday
-  //rtc.setHour(1);
-  //rtc.setDoW(7);
-  //delay(1000);
+  //    set_Clock(2, 21, 54, h12, PM); // Upload time is 24s
+  //    set_Date(11, 26, 17, 1); // Last one is the day of the week 1 = Sunday
+  // rtc.setHour(2);
 
   drawHomeScreen();
 
@@ -795,8 +786,21 @@ void loop() {
     drawTemp();
     drawDate();
     drawHomeClock();
-  }
 
-  touch_Screen_Read();
+    touch_Screen_Read();
+
+    // Coordinates of a paint button
+    pos_X = 50;
+    pos_Y = 170;
+    if ((ypos >= pos_Y) && (ypos <= pos_Y + 65) && (xpos >= 207) && (xpos <= 207 + 65)) {
+      currentPage = 1;
+      paint_Setup();
+    }
+  }
+  if (currentPage == 1) {
+    if (exitButton == false) {
+      paint_Loop();
+    }
+  }
 }
 
