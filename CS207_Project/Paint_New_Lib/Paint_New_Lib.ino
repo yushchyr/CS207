@@ -798,14 +798,23 @@ void loop() {
     drawTemp();
     drawDate();
     drawHomeClock();
-
+    
+    // Read touch screen input
     touch_Screen_Read();
-
+    
     // Coordinates of a paint button
-    pos_X = 50;
-    pos_Y = 170;
-    if ((ypos >= pos_Y) && (ypos <= pos_Y + 65) && (xpos >= 207) && (xpos <= 207 + 65)) {
+    int pos_X_PB = 50;
+    int pos_Y_PB = 170;
+    if ((ypos >= pos_Y_PB) && (ypos <= pos_Y_PB + 65) && (xpos >= pos_X_PB + 157) && (xpos <= pos_X_PB + 222)) {
+      
+      // Change scren count
       currentPage = 1;
+      
+      // Clear screen input values after clicking on paint Button. Prevents red dot in a center before you touch paint screen.
+      xpos = -1;
+      ypos = -1;
+
+      // Draw color selection and buttons
       paint_Setup();
     }
   }
