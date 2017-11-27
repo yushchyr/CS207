@@ -57,6 +57,7 @@ String alarmString = "";
 // Common start points for a Graphic block of elements
 int pos_X;
 int pos_Y;
+bool exitButton = false;
 
 // Assign human-readable names to some common 16-bit color values:
 #define BLACK           0x0000      /*   0,   0,   0 */
@@ -194,30 +195,8 @@ void touch_Screen_Read() {
   }
 }
 
-void drawBackButton() {
-  extern const uint8_t BackButton40x40[1600];
-  pos_X = 0;
-  pos_Y = tft.height() - 40;
-  tft.setAddrWindow(pos_X, pos_Y, pos_X + 39, pos_Y + 40);
-  tft.pushColors(BackButton40x40, 1600, 1);
-}
-
-void drawEraseButton(){
-  extern const uint8_t EraseButton[1600];
-  pos_X = tft.width() - 40;
-  pos_Y = tft.height() - 40;
-  tft.setAddrWindow(pos_X, pos_Y, pos_X + 39, pos_Y + 40);
-  tft.pushColors(EraseButton, 1600, 1);
-}
-
-void zeroAllData() {
-  currentPage = 0;
-  currentHours = -1;
-  currentMinutes = -1;
-  currentSeconds = -1;
-  temperature = -1;
-  currentDate = -1;
-  DoW = -1;
+void drawBackButton(){
+  
 }
 
 void paint_Setup() {
@@ -235,74 +214,74 @@ void paint_Setup() {
   tft.drawRect(0, 0, BOXSIZE, BOXSIZE, WHITE);
   currentcolor = RED;
   drawBackButton();
-  drawEraseButton();
 }
 
 void paint_Loop() {
   touch_Screen_Read();
-  // are we in top color box area ?
-  if (ypos < BOXSIZE) {               //draw white border on selected color box
-    oldcolor = currentcolor;
+    // are we in top color box area ?
+    if (ypos < BOXSIZE) {               //draw white border on selected color box
+      oldcolor = currentcolor;
 
-    if (xpos < BOXSIZE) {
-      currentcolor = RED;
-      tft.drawRect(0, 0, BOXSIZE, BOXSIZE, WHITE);
-    } else if (xpos < BOXSIZE * 2) {
-      currentcolor = YELLOW;
-      tft.drawRect(BOXSIZE, 0, BOXSIZE, BOXSIZE, WHITE);
-    } else if (xpos < BOXSIZE * 3) {
-      currentcolor = GREEN;
-      tft.drawRect(BOXSIZE * 2, 0, BOXSIZE, BOXSIZE, WHITE);
-    } else if (xpos < BOXSIZE * 4) {
-      currentcolor = CYAN;
-      tft.drawRect(BOXSIZE * 3, 0, BOXSIZE, BOXSIZE, WHITE);
-    } else if (xpos < BOXSIZE * 5) {
-      currentcolor = BLUE;
-      tft.drawRect(BOXSIZE * 4, 0, BOXSIZE, BOXSIZE, WHITE);
-    } else if (xpos < BOXSIZE * 6) {
-      currentcolor = MAGENTA;
-      tft.drawRect(BOXSIZE * 5, 0, BOXSIZE, BOXSIZE, WHITE);
-    } else if (xpos < BOXSIZE * 7) {
-      currentcolor = ORANGE;
-      tft.drawRect(BOXSIZE * 6, 0, BOXSIZE, BOXSIZE, WHITE);
-    } else if (xpos < BOXSIZE * 8) {
-      currentcolor = WHITE;
-      tft.drawRect(BOXSIZE * 7, 0, BOXSIZE, BOXSIZE, WHITE);
+      if (xpos < BOXSIZE) {
+        currentcolor = RED;
+        tft.drawRect(0, 0, BOXSIZE, BOXSIZE, WHITE);
+      } else if (xpos < BOXSIZE * 2) {
+        currentcolor = YELLOW;
+        tft.drawRect(BOXSIZE, 0, BOXSIZE, BOXSIZE, WHITE);
+      } else if (xpos < BOXSIZE * 3) {
+        currentcolor = GREEN;
+        tft.drawRect(BOXSIZE * 2, 0, BOXSIZE, BOXSIZE, WHITE);
+      } else if (xpos < BOXSIZE * 4) {
+        currentcolor = CYAN;
+        tft.drawRect(BOXSIZE * 3, 0, BOXSIZE, BOXSIZE, WHITE);
+      } else if (xpos < BOXSIZE * 5) {
+        currentcolor = BLUE;
+        tft.drawRect(BOXSIZE * 4, 0, BOXSIZE, BOXSIZE, WHITE);
+      } else if (xpos < BOXSIZE * 6) {
+        currentcolor = MAGENTA;
+        tft.drawRect(BOXSIZE * 5, 0, BOXSIZE, BOXSIZE, WHITE);
+      } else if (xpos < BOXSIZE * 7) {
+        currentcolor = ORANGE;
+        tft.drawRect(BOXSIZE * 6, 0, BOXSIZE, BOXSIZE, WHITE);
+      } else if (xpos < BOXSIZE * 8) {
+        currentcolor = WHITE;
+        tft.drawRect(BOXSIZE * 7, 0, BOXSIZE, BOXSIZE, WHITE);
+      }
+
+      if (oldcolor != currentcolor) { //rub out the previous white border
+        if (oldcolor == RED) tft.fillRect(0, 0, BOXSIZE, BOXSIZE, RED);
+        if (oldcolor == YELLOW) tft.fillRect(BOXSIZE, 0, BOXSIZE, BOXSIZE, YELLOW);
+        if (oldcolor == GREEN) tft.fillRect(BOXSIZE * 2, 0, BOXSIZE, BOXSIZE, GREEN);
+        if (oldcolor == CYAN) tft.fillRect(BOXSIZE * 3, 0, BOXSIZE, BOXSIZE, CYAN);
+        if (oldcolor == BLUE) tft.fillRect(BOXSIZE * 4, 0, BOXSIZE, BOXSIZE, BLUE);
+        if (oldcolor == MAGENTA) tft.fillRect(BOXSIZE * 5, 0, BOXSIZE, BOXSIZE, MAGENTA);
+        if (oldcolor == ORANGE) tft.fillRect(BOXSIZE * 6, 0, BOXSIZE, BOXSIZE, ORANGE);
+        if (oldcolor == WHITE) tft.fillRect(BOXSIZE * 7, 0, BOXSIZE, BOXSIZE, WHITE);
+      }
+    }
+    
+    // are we in drawing area ?
+    if (((ypos - PENRADIUS) > BOXSIZE) && ((ypos + PENRADIUS) < tft.height() - 10)) { // -10 To stop a pan leaving mark at eraze
+      tft.fillCircle(xpos, ypos, PENRADIUS, currentcolor);
+    }
+    
+    // are we in erase area ?
+    if (ypos > tft.height() - 10) {
+      // press the bottom of the screen to erase
+      tft.fillRect(0, BOXSIZE, tft.width(), tft.height() - BOXSIZE, BLACK);
+      drawBackButton();
     }
 
-    if (oldcolor != currentcolor) { //rub out the previous white border
-      if (oldcolor == RED) tft.fillRect(0, 0, BOXSIZE, BOXSIZE, RED);
-      if (oldcolor == YELLOW) tft.fillRect(BOXSIZE, 0, BOXSIZE, BOXSIZE, YELLOW);
-      if (oldcolor == GREEN) tft.fillRect(BOXSIZE * 2, 0, BOXSIZE, BOXSIZE, GREEN);
-      if (oldcolor == CYAN) tft.fillRect(BOXSIZE * 3, 0, BOXSIZE, BOXSIZE, CYAN);
-      if (oldcolor == BLUE) tft.fillRect(BOXSIZE * 4, 0, BOXSIZE, BOXSIZE, BLUE);
-      if (oldcolor == MAGENTA) tft.fillRect(BOXSIZE * 5, 0, BOXSIZE, BOXSIZE, MAGENTA);
-      if (oldcolor == ORANGE) tft.fillRect(BOXSIZE * 6, 0, BOXSIZE, BOXSIZE, ORANGE);
-      if (oldcolor == WHITE) tft.fillRect(BOXSIZE * 7, 0, BOXSIZE, BOXSIZE, WHITE);
+    // Are wepressing back button?
+    if((ypos > tft.height() - 40) && (xpos < 40)){
+      currentPage = 0;
+      currentHours = -1;
+      currentMinutes = -1;
+      currentSeconds = -1;
+      currentTemerature = -1;
+      drawHomeScreen();
     }
   }
-
-  // are we in drawing area ?
-  if (((ypos - PENRADIUS) > BOXSIZE) && ((ypos + PENRADIUS) < tft.height())) { // -15 To stop a pan leaving mark at eraze
-    tft.fillCircle(xpos, ypos, PENRADIUS, currentcolor);
-  }
-
-  // are we in erase area ?
-  if ((ypos > tft.height() - 40) && (xpos > tft.width() - 40) ){
-    // press the bottom of the screen to erase
-    tft.fillRect(0, BOXSIZE, tft.width(), tft.height() - BOXSIZE, BLACK);
-    xpos = -1;
-    ypos = -1;
-    drawEraseButton();
-    drawBackButton();
-  }
-
-  // Are we pressing a back button?
-  if ((ypos > tft.height() - 40) && (xpos < 40)) {
-    zeroAllData();
-    drawHomeScreen();
-  }
-}
 
 void TFT_Setup() {
 
@@ -463,7 +442,7 @@ void drawHomeClock() {
 
 
   pos_X = 35; // Object group beginniing
-  pos_Y = 65; // Object group beginniing
+  pos_Y = 60; // Object group beginniing
 
   tft.setCursor(pos_X, pos_Y); // Set cursor
 
@@ -482,7 +461,18 @@ void drawHomeClock() {
         tft.fillRect(pos_X - 30, pos_Y, pos_X, pos_Y - 29, BLACK);
         tft.print("24H");
       }
-      else if ((rtc.getHour(h12) >= 0) && (rtc.getHour(h12) < 10)) { // If Hours is a single digit in 24 hours mode
+      else if (rtc.getHour(h12) == 0) {
+        tft.fillRect(pos_X + 10, pos_Y, pos_X + 75, pos_Y + 20, BLACK);
+        currentHours = rtc.getHour(h12); // Get new current time
+        tft.setCursor(pos_X + 70, pos_Y - 6);
+        tft.print(currentHours); // Print curent hours
+        tft.setCursor(pos_X - 30, pos_Y);
+        tft.setTextSize(2);
+        tft.setTextColor(RED);
+        tft.fillRect(pos_X - 30, pos_Y, pos_X, pos_Y - 29, BLACK);
+        tft.print("24H");
+      }
+      else if ((rtc.getHour(h12) > 0) && (rtc.getHour(h12) < 10)) { // If Hours is a single digit in 24 hours mode
         tft.setCursor(pos_X + 65, pos_Y);
         tft.fillRect(pos_X + 65, pos_Y, pos_X + 15, pos_Y + 20, BLACK);
         currentHours = rtc.getHour(h12);
@@ -823,31 +813,31 @@ void loop() {
     drawTemp();
     drawDate();
     drawHomeClock();
-
+    
     // Read touch screen input
     touch_Screen_Read();
-
+    
     // Coordinates of a paint button
     int pos_X_PB = 50;
     int pos_Y_PB = 170;
-
-    // If we press paint button
     if ((ypos >= pos_Y_PB) && (ypos <= pos_Y_PB + 65) && (xpos >= pos_X_PB + 157) && (xpos <= pos_X_PB + 222)) {
-
+      
       // Change scren count
       currentPage = 1;
-
+      
       // Clear screen input values after clicking on paint Button. Prevents red dot in a center before you touch paint screen.
       xpos = -1;
       ypos = -1;
 
-      // Draw color selection and a back button
+      // Draw color selection and buttons
       paint_Setup();
     }
   }
-  
   if (currentPage == 1) {
+    if (exitButton == false) {
       paint_Loop();
+      
     }
   }
+}
 
