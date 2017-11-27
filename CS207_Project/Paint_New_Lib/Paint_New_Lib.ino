@@ -76,9 +76,9 @@ bool exitButton = false;
 #define MAGENTA         0xF81F      /* 255,   0, 255 */
 #define YELLOW          0xFFE0      /* 255, 255,   0 */
 #define WHITE           0xFFFF      /* 255, 255, 255 */
-#define Orange          0xFD20      /* 255, 165,   0 */
+#define ORANGE          0xFD20      /* 255, 165,   0 */
 #define GreenYellow     0xAFE5      /* 173, 255,  47 */
-#define Pink            0xF81F
+#define PINK            0xF81F
 
 // Real Time Clock instance
 DS3231 rtc;
@@ -197,7 +197,7 @@ void touch_Screen_Read() {
 
 void paint_Setup() {
   //show_tft();
-  BOXSIZE = tft.width() / 6;
+  BOXSIZE = tft.width() / 8;
   tft.fillScreen(BLACK);
   tft.fillRect(0, 0, BOXSIZE, BOXSIZE, RED);
   tft.fillRect(BOXSIZE, 0, BOXSIZE, BOXSIZE, YELLOW);
@@ -205,6 +205,8 @@ void paint_Setup() {
   tft.fillRect(BOXSIZE * 3, 0, BOXSIZE, BOXSIZE, CYAN);
   tft.fillRect(BOXSIZE * 4, 0, BOXSIZE, BOXSIZE, BLUE);
   tft.fillRect(BOXSIZE * 5, 0, BOXSIZE, BOXSIZE, MAGENTA);
+  tft.fillRect(BOXSIZE * 6, 0, BOXSIZE, BOXSIZE, ORANGE);
+  tft.fillRect(BOXSIZE * 7, 0, BOXSIZE, BOXSIZE, WHITE);
   tft.drawRect(0, 0, BOXSIZE, BOXSIZE, WHITE);
   currentcolor = RED;
   delay(1000);
@@ -234,6 +236,12 @@ void paint_Loop() {
       } else if (xpos < BOXSIZE * 6) {
         currentcolor = MAGENTA;
         tft.drawRect(BOXSIZE * 5, 0, BOXSIZE, BOXSIZE, WHITE);
+      } else if (xpos < BOXSIZE * 7) {
+        currentcolor = ORANGE;
+        tft.drawRect(BOXSIZE * 6, 0, BOXSIZE, BOXSIZE, WHITE);
+      } else if (xpos < BOXSIZE * 8) {
+        currentcolor = WHITE;
+        tft.drawRect(BOXSIZE * 7, 0, BOXSIZE, BOXSIZE, WHITE);
       }
 
       if (oldcolor != currentcolor) { //rub out the previous white border
@@ -243,19 +251,23 @@ void paint_Loop() {
         if (oldcolor == CYAN) tft.fillRect(BOXSIZE * 3, 0, BOXSIZE, BOXSIZE, CYAN);
         if (oldcolor == BLUE) tft.fillRect(BOXSIZE * 4, 0, BOXSIZE, BOXSIZE, BLUE);
         if (oldcolor == MAGENTA) tft.fillRect(BOXSIZE * 5, 0, BOXSIZE, BOXSIZE, MAGENTA);
+        if (oldcolor == ORANGE) tft.fillRect(BOXSIZE * 6, 0, BOXSIZE, BOXSIZE, ORANGE);
+        if (oldcolor == WHITE) tft.fillRect(BOXSIZE * 7, 0, BOXSIZE, BOXSIZE, WHITE);
       }
     }
+    
     // are we in drawing area ?
-    if (((ypos - PENRADIUS) > BOXSIZE) && ((ypos + PENRADIUS) < tft.height())) {
+    if (((ypos - PENRADIUS) > BOXSIZE) && ((ypos + PENRADIUS) < tft.height() - 10)) { // -10 To stop a pan leaving mark at eraze
       tft.fillCircle(xpos, ypos, PENRADIUS, currentcolor);
     }
+    
     // are we in erase area ?
     if (ypos > tft.height() - 10) {
       // press the bottom of the screen to erase
       tft.fillRect(0, BOXSIZE, tft.width(), tft.height() - BOXSIZE, BLACK);
     }
   }
-//}
+
 void TFT_Setup() {
 
   uint16_t tmp;
