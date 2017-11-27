@@ -217,7 +217,7 @@ void zeroAllData() {
   currentSeconds = -1;
   temperature = -1;
   currentDate = -1;
-  DoW = -1;
+  oldDoW = -1;
 }
 
 void paint_Setup() {
