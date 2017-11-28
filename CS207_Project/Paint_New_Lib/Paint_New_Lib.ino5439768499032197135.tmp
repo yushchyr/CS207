@@ -195,29 +195,29 @@ void touch_Screen_Read() {
 }
 
 void drawBackButton() {
-  extern const uint8_t BackButton[1024];
+  extern const uint8_t BackButton[2048];
   pos_X = 0;
-  pos_Y = tft.height() - 35;
+  pos_Y = tft.height() - 32;
   tft.setAddrWindow(pos_X, pos_Y, pos_X + 31, pos_Y + 32);
-  tft.pushColors(BackButton, 1024, 1);
+  tft.pushColors(BackButton, 1600, 1);
 }
 
-void drawEraseButton() {
-  extern const uint8_t EraseButton[1024];
-  pos_X = tft.width() - 35;
-  pos_Y = tft.height() - 35;
-  tft.setAddrWindow(pos_X, pos_Y, pos_X + 31, pos_Y + 32);
-  tft.pushColors(EraseButton, 1024, 1);
+void drawEraseButton(){
+  extern const uint8_t EraseButton[1600];
+  pos_X = tft.width() - 40;
+  pos_Y = tft.height() - 40;
+  tft.setAddrWindow(pos_X, pos_Y, pos_X + 39, pos_Y + 40);
+  tft.pushColors(EraseButton, 1600, 1);
 }
 
 void zeroAllData() {
+  currentPage = 0;
   currentHours = -1;
   currentMinutes = -1;
   currentSeconds = -1;
   temperature = -1;
   currentDate = -1;
   oldDoW = -1;
-  PM = -1;
 }
 
 void paint_Setup() {
@@ -288,7 +288,7 @@ void paint_Loop() {
   }
 
   // are we in erase area ?
-  if ((ypos > tft.height() - 40) && (xpos > tft.width() - 40) ) {
+  if ((ypos > tft.height() - 40) && (xpos > tft.width() - 40) ){
     // press the bottom of the screen to erase
     tft.fillRect(0, BOXSIZE, tft.width(), tft.height() - BOXSIZE, BLACK);
     xpos = -1;
@@ -298,8 +298,7 @@ void paint_Loop() {
   }
 
   // Are we pressing a back button?
-  if ((ypos >= tft.height() - 40) && (xpos <= 40)) {
-    currentPage = 0;
+  if ((ypos > tft.height() - 40) && (xpos < 40)) {
     zeroAllData();
     drawHomeScreen();
   }
@@ -386,14 +385,17 @@ void TFT_Setup() {
   tft.setRotation(Orientation);
 }
 
-void set_Clock(byte h, byte m, byte s, bool h12) {
+void set_Clock(byte h, byte m, byte s, bool f, bool p) {
 
-  if ((h != "") && (m != "") && (s != "")) {
-    rtc.setClockMode(h12);
-    delay(100);
-    rtc.setHour(h);
-    rtc.setMinute(m);
-    rtc.setSecond(s);
+  byte newHour = h;
+  byte newMinutes = m;
+  byte newSeconds = s;
+  bool h12 = f;
+  bool PM = p;
+  if ((newHour != "") && (newMinutes != "") && (newSeconds != "")) {
+    rtc.setHour(newHour);
+    rtc.setMinute(newMinutes);
+    rtc.setSecond(newSeconds);
   }
 }
 
@@ -450,6 +452,10 @@ void draw_Column(int x, int y1, int y2, int c) {
 }
 
 void drawHomeClock() {
+
+  // Setting clock to 24 HR mode if h12 is false
+  rtc.setClockMode(h12);
+
   // Clock size and color
   tft.setTextSize(10); // Letter size = 65
   tft.setTextColor(GREEN); // Color is green
@@ -461,14 +467,14 @@ void drawHomeClock() {
 
   tft.setCursor(pos_X, pos_Y); // Set cursor
 
-  if (currentHours != rtc.getHour(h12, PM)) { // If Hours update
+  if (currentHours != rtc.getHour(h12)) { // If Hours update
 
     if (h12 == false) { // If clock in 24 hours format
 
-      if ((rtc.getHour(h12, PM) >= 10)) { // If Hours is a double digit in 24 hours mode
+      if ((rtc.getHour(h12) >= 10)) { // If Hours is a double digit in 24 hours mode
         tft.setCursor(pos_X + 10, pos_Y);
         tft.fillRect(pos_X + 20, pos_Y, pos_X + 65, pos_Y + 20, BLACK);
-        currentHours = rtc.getHour(h12, PM); // Get new current time
+        currentHours = rtc.getHour(h12); // Get new current time
         tft.print(currentHours); // Print curent hours
         tft.setCursor(pos_X - 30, pos_Y - 6);
         tft.setTextSize(2);
@@ -476,10 +482,10 @@ void drawHomeClock() {
         tft.fillRect(pos_X - 30, pos_Y, pos_X, pos_Y - 29, BLACK);
         tft.print("24H");
       }
-      else if ((rtc.getHour(h12, PM) >= 0) && (rtc.getHour(h12,  PM) < 10)) { // If Hours is a single digit in 24 hours mode
+      else if ((rtc.getHour(h12) >= 0) && (rtc.getHour(h12) < 10)) { // If Hours is a single digit in 24 hours mode
         tft.setCursor(pos_X + 65, pos_Y);
         tft.fillRect(pos_X + 65, pos_Y, pos_X + 15, pos_Y + 20, BLACK);
-        currentHours = rtc.getHour(h12,  PM);
+        currentHours = rtc.getHour(h12);
         tft.print(currentHours); // Print curent hours
         tft.setCursor(pos_X - 30, pos_Y);
         tft.setTextSize(2);
@@ -490,12 +496,12 @@ void drawHomeClock() {
 
     }
 
-    else if (h12 == true) { // If clock in 12 hours format
+    else if (h12 = true) { // If clock in 12 hours format
 
-      if ((rtc.getHour(h12,  PM) >= 10) && (rtc.getHour(h12,  PM) <= 11)) { // If Hours is a double digit in 24 hours mode
+      if ((rtc.getHour(h12) >= 10) && (rtc.getHour(h12) <= 11)) { // If Hours is a double digit in 24 hours mode
         tft.setCursor(pos_X + 10, pos_Y);
         tft.fillRect(pos_X + 20, pos_Y, pos_X + 65, pos_Y + 20, BLACK);
-        currentHours = rtc.getHour(h12,  PM); // Get new current time
+        currentHours = rtc.getHour(h12); // Get new current time
         tft.print(currentHours); // Print curent hours
         tft.setCursor(pos_X - 30, pos_Y);
         tft.setTextSize(3);
@@ -509,11 +515,11 @@ void drawHomeClock() {
           tft.print("AM");
         }
       }
-      else if (rtc.getHour(h12,  PM) == 12) {
+      else if (rtc.getHour(h12) == 12) {
         PM = !PM;
         tft.setCursor(pos_X + 10, pos_Y);
         tft.fillRect(pos_X + 20, pos_Y, pos_X + 65, pos_Y + 20, BLACK);
-        currentHours = rtc.getHour(h12,  PM); // Get new current time
+        currentHours = rtc.getHour(h12); // Get new current time
         tft.print(currentHours); // Print curent hours
         tft.setCursor(pos_X - 30, pos_Y);
         tft.setTextSize(3);
@@ -527,10 +533,10 @@ void drawHomeClock() {
           tft.print("AM");
         }
       }
-      else if ((rtc.getHour(h12,  PM) >= 0) && (rtc.getHour(h12,  PM) < 10)) { // If Hours is a single digit in 24 hours mode
+      else if ((rtc.getHour(h12) >= 0) && (rtc.getHour(h12) < 10)) { // If Hours is a single digit in 24 hours mode
         tft.setCursor(pos_X + 65, pos_Y);
         tft.fillRect(pos_X + 65, pos_Y, pos_X + 15, pos_Y + 20, BLACK);
-        currentHours = rtc.getHour(h12,  PM);
+        currentHours = rtc.getHour(h12);
         tft.print(currentHours); // Print curent hours
         tft.setCursor(pos_X - 30, pos_Y);
         tft.setTextSize(3);
@@ -603,7 +609,7 @@ void drawAlarmButton() {
   tft.pushColors(AlarmButton, 4160, 1);
 }
 
-void drawMediaButton() {
+void drawMusicPlayerButton() {
   extern const uint8_t MusicPlayerButton[0x1040];
   pos_X = 50;
   pos_Y = 170;
@@ -677,6 +683,7 @@ void drawDate() {
 }
 
 void drawDayOfTheWeek() {
+
   // Print day of the week
   if (oldDoW != DoW) {
     oldDoW = DoW;
@@ -741,7 +748,6 @@ void drawAlarmStatus() {
 }
 
 void drawHomeScreen() {
-  zeroAllData();
   tft.fillScreen(BLACK); // Sets the background color of the area where the text will be printed to black
   drawAlarmStatus();
   drawDayOfTheWeek();
@@ -749,22 +755,12 @@ void drawHomeScreen() {
   drawDate();
   drawHomeClock();
   drawAlarmButton();
-  drawMediaButton();
+  drawMusicPlayerButton();
   drawPaintButton();
 }
 
-void draw_Media_Screen() {
-  drawTemp();
-  drawDate();
-  drawBackButton();
-  drawDayOfTheWeek();
-}
-
-void draw_Alarm_Screen() {
-
-}
-
 void setup() {
+
   // Begin serial
   Serial.begin(9600);
 
@@ -774,7 +770,9 @@ void setup() {
   // Setup TFT screen
   TFT_Setup();
 
-  DoW = rtc.getDoW(); //  Get new day of the week
+  // Get current day of the week froom RTC
+  DoW = rtc.getDoW();
+
   // Day of the week switch function
   switch (DoW) {
     case 1:
@@ -803,18 +801,23 @@ void setup() {
   // Boot in a Home Screen mode
   currentPage = 0;
 
-  //  Initiation of RTC objects;
-  //  set_Clock(23, 27, 26, true); // Upload Hours( First integer) is 24 hour format. Add 26 seconds to upload time.  Last one is h12 state. false for 24 HR
-  //  set_Date(11, 26, 17, 1); // Last one is the day of the week 1 = Sunday
 
-  // Draw home screen
+  // Initiation of RTC objects;
+  h12 = false; // True for 12 hr
+  PM = false; // It is evening if PM iis true
+  //    set_Clock(2, 21, 54, h12, PM); // Upload time is 24s
+  //    set_Date(11, 26, 17, 1); // Last one is the day of the week 1 = Sunday
+  // rtc.setHour(2);
+
   drawHomeScreen();
+
+  //paint_Setup();
 }
 
 void loop() {
-  if (currentPage == 0) {
-    
-    DoW = rtc.getDoW(); //  Get new day of the week
+  //paint_Loop();
+  if (currentPage == 0)
+  {
     drawAlarmStatus();
     drawDayOfTheWeek();
     drawTemp();
@@ -824,33 +827,12 @@ void loop() {
     // Read touch screen input
     touch_Screen_Read();
 
-    // Coordinates of a Media button
-    int  pos_X_MPB = 50;
-    int  pos_Y_MPB = 170;
-
-    // If we press media button
-    if ((ypos >= pos_Y_MPB) && (ypos <= pos_Y_MPB + 65) && (xpos >= pos_X_MPB) && (xpos <= pos_X_MPB + 65)) {
-
-      // Clear screen input values after clicking on paint Button. Prevents red dot in a center before you touch paint screen.
-      xpos = -1;
-      ypos = -1;
-
-      // Zero all data is used in a next screen
-      zeroAllData();
-      // Set sceren black
-      tft.fillScreen(BLACK); // Sets the background color of the area where the text will be printed to black
-
-      // Change scren count
-      currentPage = 2;
-    }
-
-
     // Coordinates of a paint button
-    int pos_X_PB = 207;
+    int pos_X_PB = 50;
     int pos_Y_PB = 170;
 
     // If we press paint button
-    if ((ypos >= pos_Y_PB) && (ypos <= pos_Y_PB + 65) && (xpos >= pos_X_PB) && (xpos <= pos_X_PB + 65)) {
+    if ((ypos >= pos_Y_PB) && (ypos <= pos_Y_PB + 65) && (xpos >= pos_X_PB + 157) && (xpos <= pos_X_PB + 222)) {
 
       // Change scren count
       currentPage = 1;
@@ -862,40 +844,10 @@ void loop() {
       // Draw color selection and a back button
       paint_Setup();
     }
-
-    // Coordinates of an Alarm button
-    int pos_X_AB = 365;
-    int pos_Y_AB = 170;
-    if ((ypos >= pos_Y_AB) && (ypos <= pos_Y_AB + 65) && (xpos >= pos_X_AB) && (xpos <= pos_X_AB + 65)) {
-      currentPage = 3;
-    }
   }
-
-
-
+  
   if (currentPage == 1) {
-    xpos = -1;
-    ypos = -1;
-    touch_Screen_Read();
-    if (xpos != -1) {
       paint_Loop();
     }
   }
-
-  if (currentPage == 2) {
-    draw_Media_Screen();
-    touch_Screen_Read();
-    if ((ypos > tft.height() - 40) && (xpos < 40)) {
-      zeroAllData();
-      currentPage = 0;
-      drawHomeScreen();
-    }
-  }
-
-  if (currentPage == 3) {
-    zeroAllData();
-    draw_Alarm_Screen();
-  }
-
-}
 

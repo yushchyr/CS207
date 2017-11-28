@@ -211,6 +211,7 @@ void drawEraseButton() {
 }
 
 void zeroAllData() {
+  currentPage = 0;
   currentHours = -1;
   currentMinutes = -1;
   currentSeconds = -1;
@@ -298,8 +299,7 @@ void paint_Loop() {
   }
 
   // Are we pressing a back button?
-  if ((ypos >= tft.height() - 40) && (xpos <= 40)) {
-    currentPage = 0;
+  if ((ypos > tft.height() - 40) && (xpos < 40)) {
     zeroAllData();
     drawHomeScreen();
   }
@@ -450,6 +450,10 @@ void draw_Column(int x, int y1, int y2, int c) {
 }
 
 void drawHomeClock() {
+  rtc.setClockMode(h12);
+
+  Serial.print("h12");
+  Serial.println(h12);
   // Clock size and color
   tft.setTextSize(10); // Letter size = 65
   tft.setTextColor(GREEN); // Color is green
@@ -603,7 +607,7 @@ void drawAlarmButton() {
   tft.pushColors(AlarmButton, 4160, 1);
 }
 
-void drawMediaButton() {
+void drawMusicPlayerButton() {
   extern const uint8_t MusicPlayerButton[0x1040];
   pos_X = 50;
   pos_Y = 170;
@@ -677,6 +681,7 @@ void drawDate() {
 }
 
 void drawDayOfTheWeek() {
+
   // Print day of the week
   if (oldDoW != DoW) {
     oldDoW = DoW;
@@ -741,7 +746,6 @@ void drawAlarmStatus() {
 }
 
 void drawHomeScreen() {
-  zeroAllData();
   tft.fillScreen(BLACK); // Sets the background color of the area where the text will be printed to black
   drawAlarmStatus();
   drawDayOfTheWeek();
@@ -749,22 +753,12 @@ void drawHomeScreen() {
   drawDate();
   drawHomeClock();
   drawAlarmButton();
-  drawMediaButton();
+  drawMusicPlayerButton();
   drawPaintButton();
 }
 
-void draw_Media_Screen() {
-  drawTemp();
-  drawDate();
-  drawBackButton();
-  drawDayOfTheWeek();
-}
-
-void draw_Alarm_Screen() {
-
-}
-
 void setup() {
+
   // Begin serial
   Serial.begin(9600);
 
@@ -774,7 +768,9 @@ void setup() {
   // Setup TFT screen
   TFT_Setup();
 
-  DoW = rtc.getDoW(); //  Get new day of the week
+  // Get current day of the week froom RTC
+  DoW = rtc.getDoW();
+
   // Day of the week switch function
   switch (DoW) {
     case 1:
@@ -803,18 +799,22 @@ void setup() {
   // Boot in a Home Screen mode
   currentPage = 0;
 
+
   //  Initiation of RTC objects;
-  //  set_Clock(23, 27, 26, true); // Upload Hours( First integer) is 24 hour format. Add 26 seconds to upload time.  Last one is h12 state. false for 24 HR
-  //  set_Date(11, 26, 17, 1); // Last one is the day of the week 1 = Sunday
+   h12 = true;
+    set_Clock(16, 8, 26, h12); // Upload Hours( First integer) is 24 hour format. Add 26 seconds to upload time.  Last one is h12 = true; // True for 12 hours
+  //  set_Date(11, 26, 17                                                                            , 1); // Last one is the day of the week 1 = Sunday
 
   // Draw home screen
   drawHomeScreen();
+
+  //paint_Setup();
 }
 
 void loop() {
-  if (currentPage == 0) {
-    
-    DoW = rtc.getDoW(); //  Get new day of the week
+  //paint_Loop();
+  if (currentPage == 0)
+  {
     drawAlarmStatus();
     drawDayOfTheWeek();
     drawTemp();
@@ -824,33 +824,12 @@ void loop() {
     // Read touch screen input
     touch_Screen_Read();
 
-    // Coordinates of a Media button
-    int  pos_X_MPB = 50;
-    int  pos_Y_MPB = 170;
-
-    // If we press media button
-    if ((ypos >= pos_Y_MPB) && (ypos <= pos_Y_MPB + 65) && (xpos >= pos_X_MPB) && (xpos <= pos_X_MPB + 65)) {
-
-      // Clear screen input values after clicking on paint Button. Prevents red dot in a center before you touch paint screen.
-      xpos = -1;
-      ypos = -1;
-
-      // Zero all data is used in a next screen
-      zeroAllData();
-      // Set sceren black
-      tft.fillScreen(BLACK); // Sets the background color of the area where the text will be printed to black
-
-      // Change scren count
-      currentPage = 2;
-    }
-
-
     // Coordinates of a paint button
-    int pos_X_PB = 207;
+    int pos_X_PB = 50;
     int pos_Y_PB = 170;
 
     // If we press paint button
-    if ((ypos >= pos_Y_PB) && (ypos <= pos_Y_PB + 65) && (xpos >= pos_X_PB) && (xpos <= pos_X_PB + 65)) {
+    if ((ypos >= pos_Y_PB) && (ypos <= pos_Y_PB + 65) && (xpos >= pos_X_PB + 157) && (xpos <= pos_X_PB + 222)) {
 
       // Change scren count
       currentPage = 1;
@@ -862,40 +841,10 @@ void loop() {
       // Draw color selection and a back button
       paint_Setup();
     }
-
-    // Coordinates of an Alarm button
-    int pos_X_AB = 365;
-    int pos_Y_AB = 170;
-    if ((ypos >= pos_Y_AB) && (ypos <= pos_Y_AB + 65) && (xpos >= pos_X_AB) && (xpos <= pos_X_AB + 65)) {
-      currentPage = 3;
-    }
   }
-
-
 
   if (currentPage == 1) {
-    xpos = -1;
-    ypos = -1;
-    touch_Screen_Read();
-    if (xpos != -1) {
-      paint_Loop();
-    }
+    paint_Loop();
   }
-
-  if (currentPage == 2) {
-    draw_Media_Screen();
-    touch_Screen_Read();
-    if ((ypos > tft.height() - 40) && (xpos < 40)) {
-      zeroAllData();
-      currentPage = 0;
-      drawHomeScreen();
-    }
-  }
-
-  if (currentPage == 3) {
-    zeroAllData();
-    draw_Alarm_Screen();
-  }
-
 }
 

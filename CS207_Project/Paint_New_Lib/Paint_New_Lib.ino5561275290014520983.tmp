@@ -82,10 +82,10 @@ int pos_Y;
 // Real Time Clock instance
 DS3231 rtc;
 bool Century = false;
-byte DoW = -1;
+byte DoW;
 byte oldDoW;
 String day_Of_The_Week = "";
-bool h12;
+bool  h12;
 bool PM;
 byte currentDate = -1;
 byte currentHours = -1;
@@ -678,6 +678,11 @@ void drawDate() {
 
 void drawDayOfTheWeek() {
   // Print day of the week
+  Serial.print("Day of the Week before: ");
+  Serial.println(oldDoW);
+  DoW = rtc.getDoW(); //  Get new day of the week
+  Serial.print("Day of the Week after: ");
+  Serial.println(DoW);
   if (oldDoW != DoW) {
     oldDoW = DoW;
     tft.fillRect(369, 23, 106, 17, BLACK);
@@ -741,7 +746,7 @@ void drawAlarmStatus() {
 }
 
 void drawHomeScreen() {
-  zeroAllData();
+  //zeroAllData();
   tft.fillScreen(BLACK); // Sets the background color of the area where the text will be printed to black
   drawAlarmStatus();
   drawDayOfTheWeek();
@@ -774,7 +779,6 @@ void setup() {
   // Setup TFT screen
   TFT_Setup();
 
-  DoW = rtc.getDoW(); //  Get new day of the week
   // Day of the week switch function
   switch (DoW) {
     case 1:
@@ -804,7 +808,7 @@ void setup() {
   currentPage = 0;
 
   //  Initiation of RTC objects;
-  //  set_Clock(23, 27, 26, true); // Upload Hours( First integer) is 24 hour format. Add 26 seconds to upload time.  Last one is h12 state. false for 24 HR
+  //  set_Clock(18, 36, 26, true); // Upload Hours( First integer) is 24 hour format. Add 26 seconds to upload time.  Last one is h12 state. false for 24 HR
   //  set_Date(11, 26, 17, 1); // Last one is the day of the week 1 = Sunday
 
   // Draw home screen
@@ -813,8 +817,6 @@ void setup() {
 
 void loop() {
   if (currentPage == 0) {
-    
-    DoW = rtc.getDoW(); //  Get new day of the week
     drawAlarmStatus();
     drawDayOfTheWeek();
     drawTemp();
