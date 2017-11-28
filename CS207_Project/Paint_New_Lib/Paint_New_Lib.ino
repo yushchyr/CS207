@@ -91,7 +91,7 @@ byte currentDate = -1;
 byte currentHours = -1;
 byte currentMinutes = -1;
 byte currentSeconds = -1;
-float temperature;
+float temperature = -1;
 
 
 // Show Serial info Screen
@@ -640,39 +640,70 @@ void drawTemp() {
     tft.print("C");
   }
 }
-
 void drawDate() {
   // Print date
   if (currentDate != rtc.getDate()) {
+    currentDate = rtc.getDate();
     tft.setTextColor(WHITE); // Sets color to white
     tft.setTextSize(2); // Sets font to big
-    currentDate = rtc.getDate();
-    tft.fillRect(pos_X + 368, pos_Y, 100 , 15 , BLACK);
-    pos_X = tft.width() - 107;
-    tft.setCursor(pos_X, 7);
+    int     pos_X_Date = tft.width() - 107;
+    int    pos_Y_Date = 7;
+    tft.fillRect(pos_X_Date, pos_Y_Date, 107, 14, BLACK);
+    if (rtc.getMonth(Century) < 10) tft.setCursor(pos_X_Date + 10, 7);
+    else tft.setCursor(pos_X, 7);
     tft.print(rtc.getMonth(Century), DEC);
-    tft.setCursor(pos_X + 18 , 7);
+    tft.setCursor(pos_X_Date + 18 , 7);
     tft.print(".");
+
     if (rtc.getDate() < 10) {
-      tft.setCursor(pos_X + 28, 7);
+      tft.setCursor(pos_X_Date + 28, 7);
       tft.print(0);
-      tft.setCursor(pos_X + 40, 7);
+      tft.setCursor(pos_X_Date + 40, 7);
       tft.print(rtc.getDate(), DEC);
     }
     else if (rtc.getDate() >= 10) {
-      tft.setCursor(pos_X + 28, 7);
+      tft.setCursor(pos_X_Date + 28, 7);
       tft.print(rtc.getDate(), DEC);
     }
-    tft.setCursor(pos_X + 48 , 7);
+
+    tft.setCursor(pos_X_Date + 48 , 7);
     tft.print('.');
-    tft.setCursor(pos_X + 58, 7);
+    tft.setCursor(pos_X_Date + 58, 7);
     tft.print("2");
-    tft.setCursor(pos_X + 70, 7);
+    tft.setCursor(pos_X_Date + 70, 7);
     if (Century == false) {
       tft.print('0');
     } else tft.print('1');
-    tft.setCursor(pos_X + 80, 7);
+    tft.setCursor(pos_X_Date + 80, 7);
     tft.print(rtc.getYear());
+  }
+}
+
+void dow() {
+  DoW = rtc.getDoW(); //  Get new day of the week
+  // Day of the week switch case
+  switch (DoW) {
+    case 1:
+      day_Of_The_Week = "Sunday";
+      break;
+    case 2:
+      day_Of_The_Week = "Monday";
+      break;
+    case 3:
+      day_Of_The_Week = "Tuesday";
+      break;
+    case 4:
+      day_Of_The_Week = "Wednesday";
+      break;
+    case 5:
+      day_Of_The_Week = "Thursday";
+      break;
+    case 6:
+      day_Of_The_Week = "Friday";
+      break;
+    case 7:
+      day_Of_The_Week = "Saturday";
+      break;
   }
 }
 
@@ -742,6 +773,7 @@ void drawAlarmStatus() {
 
 void drawHomeScreen() {
   zeroAllData();
+  DoW = rtc.getDoW(); //  Get new day of the week
   tft.fillScreen(BLACK); // Sets the background color of the area where the text will be printed to black
   drawAlarmStatus();
   drawDayOfTheWeek();
@@ -764,6 +796,7 @@ void draw_Alarm_Screen() {
 
 }
 
+
 void setup() {
   // Begin serial
   Serial.begin(9600);
@@ -774,37 +807,14 @@ void setup() {
   // Setup TFT screen
   TFT_Setup();
 
-  DoW = rtc.getDoW(); //  Get new day of the week
-  // Day of the week switch function
-  switch (DoW) {
-    case 1:
-      day_Of_The_Week = "Sunday";
-      break;
-    case 2:
-      day_Of_The_Week = "Monday";
-      break;
-    case 3:
-      day_Of_The_Week = "Tuesday";
-      break;
-    case 4:
-      day_Of_The_Week = "Wednesday";
-      break;
-    case 5:
-      day_Of_The_Week = "Thursday";
-      break;
-    case 6:
-      day_Of_The_Week = "Friday";
-      break;
-    case 7:
-      day_Of_The_Week = "Saturday";
-      break;
-  }
+  // Update day of the week
+  dow();
 
   // Boot in a Home Screen mode
   currentPage = 0;
 
   //  Initiation of RTC objects;
-  //  set_Clock(23, 27, 26, true); // Upload Hours( First integer) is 24 hour format. Add 26 seconds to upload time.  Last one is h12 state. false for 24 HR
+  set_Clock(23, 59, 55, true); // Upload Hours( First integer) is 24 hour format. Add 26 seconds to upload time.  Last one is h12 state. false for 24 HR
   //  set_Date(11, 26, 17, 1); // Last one is the day of the week 1 = Sunday
 
   // Draw home screen
@@ -813,10 +823,9 @@ void setup() {
 
 void loop() {
   if (currentPage == 0) {
-    
-    DoW = rtc.getDoW(); //  Get new day of the week
     drawAlarmStatus();
-    drawDayOfTheWeek();
+    dow(); // Update swich string
+    drawDayOfTheWeek(); // Draw new day of the week
     drawTemp();
     drawDate();
     drawHomeClock();
