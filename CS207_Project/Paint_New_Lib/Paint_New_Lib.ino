@@ -640,6 +640,7 @@ void drawTemp() {
     tft.print("C");
   }
 }
+
 void drawDate() {
   // Print date
   if (currentDate != rtc.getDate()) {
@@ -649,32 +650,32 @@ void drawDate() {
     int     pos_X_Date = tft.width() - 107;
     int    pos_Y_Date = 7;
     tft.fillRect(pos_X_Date, pos_Y_Date, 107, 14, BLACK);
-    if (rtc.getMonth(Century) < 10) tft.setCursor(pos_X_Date + 10, 7);
-    else tft.setCursor(pos_X, 7);
+    if (rtc.getMonth(Century) < 10) tft.setCursor(pos_X_Date + 10, pos_Y_Date);
+    else tft.setCursor(pos_X_Date, pos_Y_Date);
     tft.print(rtc.getMonth(Century), DEC);
-    tft.setCursor(pos_X_Date + 18 , 7);
+    tft.setCursor(pos_X_Date + 18 , pos_Y_Date);
     tft.print(".");
 
     if (rtc.getDate() < 10) {
-      tft.setCursor(pos_X_Date + 28, 7);
+      tft.setCursor(pos_X_Date + 28, pos_Y_Date);
       tft.print(0);
-      tft.setCursor(pos_X_Date + 40, 7);
+      tft.setCursor(pos_X_Date + 40, pos_Y_Date);
       tft.print(rtc.getDate(), DEC);
     }
     else if (rtc.getDate() >= 10) {
-      tft.setCursor(pos_X_Date + 28, 7);
+      tft.setCursor(pos_X_Date + 28, pos_Y_Date);
       tft.print(rtc.getDate(), DEC);
     }
 
-    tft.setCursor(pos_X_Date + 48 , 7);
+    tft.setCursor(pos_X_Date + 48 , pos_Y_Date);
     tft.print('.');
-    tft.setCursor(pos_X_Date + 58, 7);
+    tft.setCursor(pos_X_Date + 58, pos_Y_Date);
     tft.print("2");
-    tft.setCursor(pos_X_Date + 70, 7);
+    tft.setCursor(pos_X_Date + 70, pos_Y_Date);
     if (Century == false) {
       tft.print('0');
     } else tft.print('1');
-    tft.setCursor(pos_X_Date + 80, 7);
+    tft.setCursor(pos_X_Date + 80, pos_Y_Date);
     tft.print(rtc.getYear());
   }
 }
@@ -814,8 +815,8 @@ void setup() {
   currentPage = 0;
 
   //  Initiation of RTC objects;
-  set_Clock(23, 59, 55, true); // Upload Hours( First integer) is 24 hour format. Add 26 seconds to upload time.  Last one is h12 state. false for 24 HR
-  //  set_Date(11, 26, 17, 1); // Last one is the day of the week 1 = Sunday
+  // set_Clock(2, 10, 27, true); // Upload Hours( First integer) is 24 hour format. Add 26 seconds to upload time.  Last one is h12 state. false for 24 HR
+  // set_Date(11, 28, 17, 3); // Last one is the day of the week 1 = Sunday
 
   // Draw home screen
   drawHomeScreen();
