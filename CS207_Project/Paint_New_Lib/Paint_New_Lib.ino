@@ -652,13 +652,13 @@ void drawSmallClock() {
     if (h12 == false) { // If clock in 24 hours format
       if ((rtc.getHour(h12, PM) >= 10)) { // If Hours is a double digit in 24 hours mode
         tft.setCursor(pos_X_SC + 10, pos_Y_SC);
-        tft.fillRect(pos_X_SC + 10, pos_Y_SC, pos_X_SC + 65, pos_Y_SC + 20, BLACK);
+        tft.fillRect(pos_X_SC + 10, pos_Y_SC, 22, 14, BLACK);
         currentHours = rtc.getHour(h12, PM); // Get new current time
         tft.print(currentHours); // Print curent hours
       }
       else if ((rtc.getHour(h12, PM) >= 0) && (rtc.getHour(h12,  PM) < 10)) { // If Hours is a single digit in 24 hours mode
-        tft.setCursor(pos_X_SC + 17, pos_Y_SC);
-        tft.fillRect(pos_X_SC + 17, pos_Y_SC, 10, 20, WHITE);
+        tft.setCursor(pos_X_SC + 22, pos_Y_SC);
+        tft.fillRect(pos_X_SC + 22, pos_Y_SC, 10, 14, WHITE);
         currentHours = rtc.getHour(h12,  PM);
         tft.print(currentHours); // Print curent hours
       }
@@ -981,7 +981,7 @@ void setup() {
   //  Initiation of RTC objects;
   // set_Clock(2, 10, 27, true); // Upload Hours( First integer) is 24 hour format. Add 26 seconds to upload time.  Last one is h12 state. false for 24 HR
   // set_Date(11, 28, 17, 3); // Last one is the day of the week 1 = Sunday
-
+  rtc.setHour(8);
   // Draw home screen
   drawHomeScreen();
 }
