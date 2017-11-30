@@ -428,7 +428,7 @@ void draw_Column(int x, int y1, int y2, int c) {
   tft.drawPixel(x + 1, y1 + 4, c);
   tft.drawPixel(x + 2, y1 + 4, c);
   tft.drawPixel(x + 3, y1 + 4, c);
-  tft.drawPixel(x + 2, y1 + 4, c);
+  tft.drawPixel(x + 2, y1 + 5, c);
 
   // Draw a bottom dot divider
   tft.drawPixel(x + 2, y2, c);
@@ -450,6 +450,49 @@ void draw_Column(int x, int y1, int y2, int c) {
   tft.drawPixel(x + 3, y2 + 4, c);
   tft.drawPixel(x + 2, y2 + 5, c);
 }
+
+void draw_Small_Column(int x, int y1, int y2, int c) {
+  // Draw a top dot divider
+  tft.drawPixel(x + 2, y1, c);
+  tft.drawPixel(x + 1, y1 + 1, c);
+  tft.drawPixel(x + 2, y1 + 1, c);
+  tft.drawPixel(x + 3, y1 + 1, c);
+  tft.drawPixel(x, y1 + 2, c);
+  tft.drawPixel(x + 1, y1 + 2, c);
+  tft.drawPixel(x + 2, y1 + 2, c);
+  tft.drawPixel(x + 3, y1 + 2, c);
+  tft.drawPixel(x + 4, y1 + 2, c);
+  tft.drawPixel(x, y1 + 3, c);
+  tft.drawPixel(x + 1, y1 + 3, c);
+  tft.drawPixel(x + 2, y1 + 3, c);
+  tft.drawPixel(x + 3, y1 + 3, c);
+  tft.drawPixel(x + 4, y1 + 3, c);
+  tft.drawPixel(x + 1, y1 + 4, c);
+  tft.drawPixel(x + 2, y1 + 4, c);
+  tft.drawPixel(x + 3, y1 + 4, c);
+  tft.drawPixel(x + 2, y1 + 5, c);
+
+  // Draw a bottom dot divider
+  tft.drawPixel(x + 2, y2, c);
+  tft.drawPixel(x + 1, y2 + 1, c);
+  tft.drawPixel(x + 2, y2 + 1, c);
+  tft.drawPixel(x + 3, y2 + 1, c);
+  tft.drawPixel(x, y2 + 2, c);
+  tft.drawPixel(x + 1, y2 + 2, c);
+  tft.drawPixel(x + 2, y2 + 2, c);
+  tft.drawPixel(x + 3, y2 + 2, c);
+  tft.drawPixel(x + 4, y2 + 2, c);
+  tft.drawPixel(x, y2 + 3, c);
+  tft.drawPixel(x + 1, y2 + 3, c);
+  tft.drawPixel(x + 2, y2 + 3, c);
+  tft.drawPixel(x + 3, y2 + 3, c);
+  tft.drawPixel(x + 4, y2 + 3, c);
+  tft.drawPixel(x + 1, y2 + 4, c);
+  tft.drawPixel(x + 2, y2 + 4, c);
+  tft.drawPixel(x + 3, y2 + 4, c);
+  tft.drawPixel(x + 2, y2 + 5, c);
+}
+
 
 void drawHomeClock() {
   // Clock size and color
@@ -596,43 +639,35 @@ void drawHomeClock() {
 }
 
 void drawSmallClock() {
-  // Clock size and color
-  tft.setTextSize(2); // Letter size = 65
-  tft.setTextColor(GREEN); // Color is green
 
   // Setting up coordinates for a small clock begginning
-int  pos_X_SC = 7; // Object group beginniing
-int  pos_Y_SC = 7; // Object group beginniing
-
+  int  pos_X_SC = 160; // Object group beginniing
+  int  pos_Y_SC = 7; // Object group beginniing
+  int text_Size = 1;
+  // Clock size and color
+  tft.setTextColor(GREEN); // Color is green
   tft.setCursor(pos_X_SC, pos_Y_SC); // Set cursor
-
+  tft.setTextSize(text_Size + 1); // Size of the didgits
   if (currentHours != rtc.getHour(h12, PM)) { // If Hours update
-
     if (h12 == false) { // If clock in 24 hours format
-
       if ((rtc.getHour(h12, PM) >= 10)) { // If Hours is a double digit in 24 hours mode
         tft.setCursor(pos_X_SC + 10, pos_Y_SC);
-        tft.fillRect(pos_X_SC + 20, pos_Y_SC, pos_X_SC + 65, pos_Y_SC + 20, BLACK);
+        tft.fillRect(pos_X_SC + 10, pos_Y_SC, pos_X_SC + 65, pos_Y_SC + 20, BLACK);
         currentHours = rtc.getHour(h12, PM); // Get new current time
         tft.print(currentHours); // Print curent hours
-        tft.setCursor(pos_X_SC - 30, pos_Y_SC - 6);
-        tft.setTextSize(2);
-        tft.setTextColor(RED);
-        tft.fillRect(pos_X_SC - 30, pos_Y_SC, pos_X_SC, pos_Y_SC - 29, BLACK);
-        tft.print("24H");
       }
       else if ((rtc.getHour(h12, PM) >= 0) && (rtc.getHour(h12,  PM) < 10)) { // If Hours is a single digit in 24 hours mode
-        tft.setCursor(pos_X_SC + 65, pos_X_SC);
-        tft.fillRect(pos_X_SC + 65, pos_Y_SC, pos_X_SC + 15, pos_Y_SC + 20, BLACK);
+        tft.setCursor(pos_X_SC + 17, pos_Y_SC);
+        tft.fillRect(pos_X_SC + 17, pos_Y_SC, 10, 20, WHITE);
         currentHours = rtc.getHour(h12,  PM);
         tft.print(currentHours); // Print curent hours
-        tft.setCursor(pos_X_SC - 30, pos_Y_SC);
-        tft.setTextSize(2);
+      }
+
+        tft.setCursor(pos_X_SC - 10, pos_Y_SC);
+        tft.setTextSize(text_Size);
         tft.setTextColor(RED);
         tft.fillRect(pos_X_SC - 30, pos_Y_SC, pos_X_SC, pos_Y_SC - 29, BLACK);
         tft.print("24H");
-      }
-
     }
 
     else if (h12 == true) { // If clock in 12 hours format
@@ -642,17 +677,6 @@ int  pos_Y_SC = 7; // Object group beginniing
         tft.fillRect(pos_X_SC + 20, pos_Y_SC, pos_X_SC + 65, pos_Y_SC + 20, BLACK);
         currentHours = rtc.getHour(h12,  PM); // Get new current time
         tft.print(currentHours); // Print curent hours
-        tft.setCursor(pos_X_SC - 30, pos_Y_SC);
-        tft.setTextSize(3);
-        tft.setTextColor(RED);
-        if (PM) {
-          tft.fillRect(pos_X_SC - 30, pos_Y_SC, pos_X_SC - 20, pos_Y_SC - 29, BLACK);
-          tft.print("PM");
-        }
-        else {
-          tft.fillRect(pos_X_SC - 30, pos_Y_SC, pos_X_SC - 20, pos_Y_SC - 29, BLACK);
-          tft.print("AM");
-        }
       }
       else if (rtc.getHour(h12,  PM) == 12) {
         PM = !PM;
@@ -660,79 +684,71 @@ int  pos_Y_SC = 7; // Object group beginniing
         tft.fillRect(pos_X_SC + 20, pos_Y_SC, pos_X_SC + 65, pos_Y_SC + 20, BLACK);
         currentHours = rtc.getHour(h12,  PM); // Get new current time
         tft.print(currentHours); // Print curent hours
-        tft.setCursor(pos_X_SC - 30, pos_Y_SC);
-        tft.setTextSize(3);
-        tft.setTextColor(RED);
-        if (PM) {
-          tft.fillRect(pos_X_SC - 30, pos_Y_SC, pos_X_SC - 20, pos_Y_SC - 29, BLACK);
-          tft.print("PM");
-        }
-        else {
-          tft.fillRect(pos_X_SC - 30, pos_Y_SC, pos_X_SC - 20, pos_Y_SC - 29, BLACK);
-          tft.print("AM");
-        }
       }
       else if ((rtc.getHour(h12,  PM) >= 0) && (rtc.getHour(h12,  PM) < 10)) { // If Hours is a single digit in 24 hours mode
         tft.setCursor(pos_X_SC + 65, pos_Y_SC);
         tft.fillRect(pos_X_SC + 65, pos_Y_SC, pos_X_SC + 15, pos_Y_SC + 20, BLACK);
         currentHours = rtc.getHour(h12,  PM);
         tft.print(currentHours); // Print curent hours
-        tft.setCursor(pos_X_SC - 30, pos_Y_SC);
-        tft.setTextSize(3);
-        tft.setTextColor(RED);
-        if (PM) {
-          tft.fillRect(pos_X_SC - 30, pos_Y_SC, pos_X_SC - 20, pos_Y_SC - 29, BLACK);
-          tft.print("PM");
-        }
-        else {
-          tft.fillRect(pos_X_SC - 30, pos_Y_SC, pos_X_SC - 20, pos_Y_SC - 29, BLACK);
-          tft.print("AM");
-        }
+
+      }
+      tft.setCursor(pos_X_SC - 30, pos_Y_SC);
+      tft.setTextSize(text_Size);
+      tft.setTextColor(RED);
+      if (PM) {
+        tft.fillRect(pos_X_SC - 30, pos_Y_SC, pos_X_SC - 20, pos_Y_SC - 29, BLACK);
+        tft.print("PM");
+      }
+      else {
+        tft.fillRect(pos_X_SC - 30, pos_Y_SC, pos_X_SC - 20, pos_Y_SC - 29, BLACK);
+        tft.print("AM");
       }
     }
   }
 
   // Draw column
-  draw_Column(pos_X_SC + 129, pos_Y_SC + 17, pos_Y_SC + 47, GREEN);
+  draw_Small_Column(pos_X_SC + 35, pos_Y_SC, pos_Y_SC + 7, GREEN);
+
+  // Returning size to the value of 2 again
+  tft.setTextSize(text_Size + 1);
 
   //   Minutes update
   if (currentMinutes != rtc.getMinute()) {
+
     if ((rtc.getMinute() < 10) && (rtc.getMinute() >= 0)) {
       currentMinutes = rtc.getMinute(); // Getting new minutes
-      tft.setTextSize(2);
       tft.setTextColor(GREEN);
-      tft.fillRect(pos_X_SC + 145, pos_Y_SC, pos_X_SC + 75, pos_Y_SC + 20, BLACK);
-      tft.setCursor(pos_X_SC + 145, pos_Y_SC); // Set cursor
+      tft.fillRect(pos_X_SC + 70, pos_Y_SC, pos_X_SC + 80, pos_Y_SC + 20, BLACK);
+      tft.setCursor(pos_X_SC + 70, pos_Y_SC); // Set cursor
       tft.print('0');
       tft.setCursor(pos_X_SC + 205, pos_Y_SC); // Set cursor
       tft.print(currentMinutes); // Print minutes
     }
     else if (rtc.getMinute() >= 10) {
       currentMinutes = rtc.getMinute(); // Getting new minutes
-      tft.setTextSize(10);
       tft.setTextColor(GREEN);
-      tft.setCursor(pos_X_SC + 145, pos_Y_SC); // Set cursor
-      tft.fillRect(pos_X_SC + 145, pos_Y_SC, pos_X_SC + 75, pos_Y_SC + 20, BLACK);
+      tft.setCursor(pos_X_SC + 70, pos_Y_SC); // Set cursor
+      tft.fillRect(pos_X_SC + 70, pos_Y_SC, pos_X_SC + 80, pos_Y_SC + 20, BLACK);
       tft.print(currentMinutes); // Print minutes
     }
   }
   // Draw column
-  draw_Column(pos_X_SC + 265, pos_Y_SC + 17, pos_Y_SC + 47, GREEN);
+  draw_Small_Column(pos_X_SC + 100, pos_Y_SC, pos_Y_SC + 7, GREEN);
 
   // Draw seconds
   if (currentSeconds != rtc.getSecond()) {
     if ((rtc.getSecond() >= 0) && (rtc.getSecond() < 10)) {
       currentSeconds = rtc.getSecond(); // Getting new Seconds
-      tft.fillRect(pos_X_SC + 285, pos_Y_SC, pos_X_SC + 75, pos_Y_SC + 20, BLACK);
-      tft.setCursor(pos_X_SC + 285, pos_Y_SC);
+      tft.fillRect(pos_X_SC + 200, pos_Y_SC, pos_X_SC + 75, pos_Y_SC + 20, BLACK);
+      tft.setCursor(pos_X_SC + 200, pos_Y_SC);
       tft.print('0');
       tft.setCursor(pos_X_SC + 285 + 60, pos_Y_SC); // Set cursor
       tft.print(currentSeconds); // Print Seconds
     }
     else {
       currentSeconds = rtc.getSecond(); // Getting new Seconds
-      tft.setCursor(pos_X_SC + 285, pos_Y_SC); // Set cursor
-      tft.fillRect(pos_X_SC + 285, pos_Y_SC, pos_X_SC + 75, pos_Y_SC + 20, BLACK);
+      tft.setCursor(pos_X_SC + 200, pos_Y_SC); // Set cursor
+      tft.fillRect(pos_X_SC + 200, pos_Y_SC, pos_X_SC + 75, pos_Y_SC + 20, BLACK);
       tft.print(currentSeconds); // Print Seconds
     }
   }
