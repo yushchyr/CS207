@@ -210,14 +210,6 @@ void drawEraseButton() {
   tft.pushColors(EraseButton, 1024, 1);
 }
 
-void drawRadioButton() {
-  extern const uint8_t RadioButton[13200];
-  pos_X = 180;
-  pos_Y = 105;
-  tft.setAddrWindow(pos_X, pos_Y, pos_X + 119, pos_Y + 110);
-  tft.pushColors(RadioButton, 13200, 1);
-}
-
 void zeroAllData() {
   currentHours = -1;
   currentMinutes = -1;
@@ -596,10 +588,10 @@ void drawSmallClock() {
         tft.print(currentHours); // Print curent hours
       }
       // Print 24 hours icon
-      tft.fillRect(pos_X_SC - 30, pos_Y_SC, 35, 14, BLACK);
-      tft.setCursor(pos_X_SC - 30, pos_Y_SC);
+      tft.setCursor(pos_X_SC - 10, pos_Y_SC);
       tft.setTextSize(text_Size);
       tft.setTextColor(RED);
+      tft.fillRect(pos_X_SC - 30, pos_Y_SC, pos_X_SC, pos_Y_SC - 29, BLACK);
       tft.print("24H");
     }
 
@@ -662,7 +654,7 @@ void drawSmallClock() {
   }
 
   // Draw column
-  draw_Column(pos_X_SC + 68, pos_Y_SC, pos_Y_SC + 7, GREEN);
+  draw_Small_Column(pos_X_SC + 68, pos_Y_SC, pos_Y_SC + 7, GREEN);
 
   // Draw seconds
   if (currentSeconds != rtc.getSecond()) {
@@ -880,16 +872,6 @@ void draw_Media_Screen() {
   drawBackButton();
   drawDayOfTheWeek();
   drawSmallClock();
-  drawRadioButton();
-}
-
-void draw_Radio_Screen() {
-  // Draw date/time/temp/day of the week
-  drawTemp();
-  drawDate();
-  drawBackButton();
-  drawDayOfTheWeek();
-  drawSmallClock();
 }
 
 void draw_Alarm_Screen() {
@@ -918,8 +900,7 @@ void setup() {
   currentPage = 0;
 
   // Initiation of RTC objects;
-  // set_Clock(19, 28, 28, true); // Upload Hours( First integer) an 24 hour format even for 12hr mod.
-  // Add 28 seconds to upload time.  Last one is h12 state. false for 24 HR
+  set_Clock(15, 13, 00, false); // Upload Hours( First integer) is 24 hour format. Add 26 seconds to upload time.  Last one is h12 state. false for 24 HR
   //   set_Date(11, 30, 17, 5); // Last one is the day of the week 1 = Sunday
 
   // Draw home screen
@@ -1012,25 +993,6 @@ void loop() {
     draw_Media_Screen();
     touch_Screen_Read();
 
-    // If we press radio button
-    if ((xpos >= 180) && (xpos <= 300) && (ypos >= 105) && (ypos <= 215)) {
-      
-      // Zero touch input
-      xpos = -1;
-      ypos = -1;
-
-      // Zero all data is used in a next screen
-      zeroAllData();
-
-      // Set sceren black
-      tft.fillScreen(BLACK); // Sets the background color of the area where the text will be printed to black
-
-      // Draw Radio screen
-      draw_Radio_Screen();
-      currentPage = 4;
-    }
-
-    // If we press back button
     if ((ypos > tft.height() - 40) && (xpos < 40)) {
       zeroAllData();
       currentPage = 0;
@@ -1041,8 +1003,6 @@ void loop() {
   if (currentPage == 3) {
     draw_Alarm_Screen();
     touch_Screen_Read();
-
-    // If we pressing back button
     if ((ypos > tft.height() - 40) && (xpos < 40)) {
       zeroAllData();
       currentPage = 0;
@@ -1050,15 +1010,6 @@ void loop() {
     }
 
   }
-  if (currentPage == 4) {
-    draw_Radio_Screen();
-    touch_Screen_Read();
 
-    // If we pressing back button
-    if ((ypos > tft.height() - 40) && (xpos < 40)) {
-      zeroAllData();
-      currentPage = 0;
-      drawHomeScreen();
-    }
-  }
 }
+

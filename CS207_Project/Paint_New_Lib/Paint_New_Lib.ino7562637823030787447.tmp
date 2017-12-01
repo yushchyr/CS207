@@ -210,14 +210,6 @@ void drawEraseButton() {
   tft.pushColors(EraseButton, 1024, 1);
 }
 
-void drawRadioButton() {
-  extern const uint8_t RadioButton[13200];
-  pos_X = 180;
-  pos_Y = 105;
-  tft.setAddrWindow(pos_X, pos_Y, pos_X + 119, pos_Y + 110);
-  tft.pushColors(RadioButton, 13200, 1);
-}
-
 void zeroAllData() {
   currentHours = -1;
   currentMinutes = -1;
@@ -396,13 +388,14 @@ void TFT_Setup() {
   tft.setRotation(Orientation);
 }
 
-void set_Clock(byte h, byte m, byte s, bool hm) {
+void set_Clock(byte h, byte m, byte s, bool h12) {
 
   if ((h != "") && (m != "") && (s != "")) {
+    rtc.setClockMode(h12);
+    delay(100);
     rtc.setHour(h);
     rtc.setMinute(m);
     rtc.setSecond(s);
-    rtc.setClockMode(hm);
   }
 }
 
@@ -458,12 +451,57 @@ void draw_Column(int x, int y1, int y2, int c) {
   tft.drawPixel(x + 2, y2 + 5, c);
 }
 
+void draw_Small_Column(int x, int y1, int y2, int c) {
+  // Draw a top dot divider
+  tft.drawPixel(x + 2, y1, c);
+  tft.drawPixel(x + 1, y1 + 1, c);
+  tft.drawPixel(x + 2, y1 + 1, c);
+  tft.drawPixel(x + 3, y1 + 1, c);
+  tft.drawPixel(x, y1 + 2, c);
+  tft.drawPixel(x + 1, y1 + 2, c);
+  tft.drawPixel(x + 2, y1 + 2, c);
+  tft.drawPixel(x + 3, y1 + 2, c);
+  tft.drawPixel(x + 4, y1 + 2, c);
+  tft.drawPixel(x, y1 + 3, c);
+  tft.drawPixel(x + 1, y1 + 3, c);
+  tft.drawPixel(x + 2, y1 + 3, c);
+  tft.drawPixel(x + 3, y1 + 3, c);
+  tft.drawPixel(x + 4, y1 + 3, c);
+  tft.drawPixel(x + 1, y1 + 4, c);
+  tft.drawPixel(x + 2, y1 + 4, c);
+  tft.drawPixel(x + 3, y1 + 4, c);
+  tft.drawPixel(x + 2, y1 + 5, c);
+
+  // Draw a bottom dot divider
+  tft.drawPixel(x + 2, y2, c);
+  tft.drawPixel(x + 1, y2 + 1, c);
+  tft.drawPixel(x + 2, y2 + 1, c);
+  tft.drawPixel(x + 3, y2 + 1, c);
+  tft.drawPixel(x, y2 + 2, c);
+  tft.drawPixel(x + 1, y2 + 2, c);
+  tft.drawPixel(x + 2, y2 + 2, c);
+  tft.drawPixel(x + 3, y2 + 2, c);
+  tft.drawPixel(x + 4, y2 + 2, c);
+  tft.drawPixel(x, y2 + 3, c);
+  tft.drawPixel(x + 1, y2 + 3, c);
+  tft.drawPixel(x + 2, y2 + 3, c);
+  tft.drawPixel(x + 3, y2 + 3, c);
+  tft.drawPixel(x + 4, y2 + 3, c);
+  tft.drawPixel(x + 1, y2 + 4, c);
+  tft.drawPixel(x + 2, y2 + 4, c);
+  tft.drawPixel(x + 3, y2 + 4, c);
+  tft.drawPixel(x + 2, y2 + 5, c);
+}
+
+
 void drawHomeClock() {
   // Clock size and color
   tft.setTextSize(10); // Letter size = 65
   tft.setTextColor(GREEN); // Color is green
 
-  pos_X = 50; // Object group beginniing
+
+
+  pos_X = 35; // Object group beginniing
   pos_Y = 65; // Object group beginniing
 
   tft.setCursor(pos_X, pos_Y); // Set cursor
@@ -477,52 +515,83 @@ void drawHomeClock() {
         tft.fillRect(pos_X + 20, pos_Y, pos_X + 65, pos_Y + 20, BLACK);
         currentHours = rtc.getHour(h12, PM); // Get new current time
         tft.print(currentHours); // Print curent hours
+        tft.setCursor(pos_X - 30, pos_Y - 6);
+        tft.setTextSize(2);
+        tft.setTextColor(RED);
+        tft.fillRect(pos_X - 30, pos_Y, pos_X, pos_Y - 29, BLACK);
+        tft.print("24H");
       }
       else if ((rtc.getHour(h12, PM) >= 0) && (rtc.getHour(h12,  PM) < 10)) { // If Hours is a single digit in 24 hours mode
-        tft.fillRect(pos_X + 10, pos_Y, 105, 70, BLACK);
-        tft.setCursor(pos_X + 10, pos_Y);
-        tft.print('0');
         tft.setCursor(pos_X + 65, pos_Y);
+        tft.fillRect(pos_X + 65, pos_Y, pos_X + 15, pos_Y + 20, BLACK);
         currentHours = rtc.getHour(h12,  PM);
         tft.print(currentHours); // Print curent hours
+        tft.setCursor(pos_X - 30, pos_Y);
+        tft.setTextSize(2);
+        tft.setTextColor(RED);
+        tft.fillRect(pos_X - 30, pos_Y, pos_X, pos_Y - 29, BLACK);
+        tft.print("24H");
       }
-      tft.fillRect(pos_X - 45, pos_Y - 3, 35, 15, BLACK);
-      tft.setCursor(pos_X - 45, pos_Y - 3);
-      tft.setTextSize(2);
-      tft.setTextColor(RED);
-      tft.print("24H");
+
     }
 
     else if (h12 == true) { // If clock in 12 hours format
 
-      if ((rtc.getHour(h12,  PM) >= 10) && (rtc.getHour(h12,  PM) <= 12)) { // If Hours is a double digit in 24 hours mode
+      if ((rtc.getHour(h12,  PM) >= 10) && (rtc.getHour(h12,  PM) <= 11)) { // If Hours is a double digit in 24 hours mode
         tft.setCursor(pos_X + 10, pos_Y);
         tft.fillRect(pos_X + 20, pos_Y, pos_X + 65, pos_Y + 20, BLACK);
         currentHours = rtc.getHour(h12,  PM); // Get new current time
         tft.print(currentHours); // Print curent hours
+        tft.setCursor(pos_X - 30, pos_Y);
+        tft.setTextSize(3);
+        tft.setTextColor(RED);
+        if (PM) {
+          tft.fillRect(pos_X - 30, pos_Y, pos_X - 20, pos_Y - 29, BLACK);
+          tft.print("PM");
+        }
+        else {
+          tft.fillRect(pos_X - 30, pos_Y, pos_X - 20, pos_Y - 29, BLACK);
+          tft.print("AM");
+        }
       }
-
+      else if (rtc.getHour(h12,  PM) == 12) {
+        PM = !PM;
+        tft.setCursor(pos_X + 10, pos_Y);
+        tft.fillRect(pos_X + 20, pos_Y, pos_X + 65, pos_Y + 20, BLACK);
+        currentHours = rtc.getHour(h12,  PM); // Get new current time
+        tft.print(currentHours); // Print curent hours
+        tft.setCursor(pos_X - 30, pos_Y);
+        tft.setTextSize(3);
+        tft.setTextColor(RED);
+        if (PM) {
+          tft.fillRect(pos_X - 30, pos_Y, pos_X - 20, pos_Y - 29, BLACK);
+          tft.print("PM");
+        }
+        else {
+          tft.fillRect(pos_X - 30, pos_Y, pos_X - 20, pos_Y - 29, BLACK);
+          tft.print("AM");
+        }
+      }
       else if ((rtc.getHour(h12,  PM) >= 0) && (rtc.getHour(h12,  PM) < 10)) { // If Hours is a single digit in 24 hours mode
-        tft.fillRect(pos_X + 5, pos_Y, 110, 70, BLACK);
-        tft.setCursor(pos_X + 5, pos_Y);
-        tft.print('0');
         tft.setCursor(pos_X + 65, pos_Y);
+        tft.fillRect(pos_X + 65, pos_Y, pos_X + 15, pos_Y + 20, BLACK);
         currentHours = rtc.getHour(h12,  PM);
         tft.print(currentHours); // Print curent hours
-      }
-      tft.setCursor(pos_X - 45, pos_Y);
-      tft.setTextSize(3);
-      tft.setTextColor(RED);
-      if (PM) {
-        tft.fillRect(pos_X - 45, pos_Y, 33, 21, BLACK);
-        tft.print("PM");
-      }
-      else {
-        tft.fillRect(pos_X - 45, pos_Y, 33, 21, BLACK);
-        tft.print("AM");
+        tft.setCursor(pos_X - 30, pos_Y);
+        tft.setTextSize(3);
+        tft.setTextColor(RED);
+        if (PM) {
+          tft.fillRect(pos_X - 30, pos_Y, pos_X - 20, pos_Y - 29, BLACK);
+          tft.print("PM");
+        }
+        else {
+          tft.fillRect(pos_X - 30, pos_Y, pos_X - 20, pos_Y - 29, BLACK);
+          tft.print("AM");
+        }
       }
     }
   }
+
   // Draw column
   draw_Column(pos_X + 129, pos_Y + 17, pos_Y + 47, GREEN);
 
@@ -574,11 +643,11 @@ void drawSmallClock() {
   // Setting up coordinates for a small clock begginning
   int  pos_X_SC = 200; // Object group beginniing
   int  pos_Y_SC = 7; // Object group beginniing
-  int text_Size = 2;
+  int text_Size = 1;
   // Clock size and color
   tft.setTextColor(GREEN); // Color is green
   tft.setCursor(pos_X_SC, pos_Y_SC); // Set cursor
-  tft.setTextSize(text_Size); // Size of the didgits
+  tft.setTextSize(text_Size + 1); // Size of the didgits
   if (currentHours != rtc.getHour(h12, PM)) { // If Hours update
     if (h12 == false) { // If clock in 24 hours format
       if ((rtc.getHour(h12, PM) >= 10)) { // If Hours is a double digit in 24 hours mode
@@ -588,39 +657,42 @@ void drawSmallClock() {
         tft.print(currentHours); // Print curent hours
       }
       else if ((rtc.getHour(h12, PM) >= 0) && (rtc.getHour(h12,  PM) < 10)) { // If Hours is a single digit in 24 hours mode
-        tft.setCursor(pos_X_SC + 10, pos_Y_SC);
-        tft.print('0');
         tft.setCursor(pos_X_SC + 22, pos_Y_SC);
         tft.fillRect(pos_X_SC + 22, pos_Y_SC, 10, 14, BLACK);
         currentHours = rtc.getHour(h12,  PM);
         tft.print(currentHours); // Print curent hours
       }
-      // Print 24 hours icon
-      tft.fillRect(pos_X_SC - 30, pos_Y_SC, 35, 14, BLACK);
-      tft.setCursor(pos_X_SC - 30, pos_Y_SC);
-      tft.setTextSize(text_Size);
-      tft.setTextColor(RED);
-      tft.print("24H");
+        // Print 24 hours icon
+        tft.setCursor(pos_X_SC - 10, pos_Y_SC);
+        tft.setTextSize(text_Size);
+        tft.setTextColor(RED);
+        tft.fillRect(pos_X_SC - 30, pos_Y_SC, pos_X_SC, pos_Y_SC - 29, BLACK);
+        tft.print("24H");
     }
 
     else if (h12 == true) { // If clock in 12 hours format
 
-      if ((rtc.getHour(h12,  PM) >= 10) && (rtc.getHour(h12,  PM) <= 12)) { // If Hours is a double digit in 24 hours mode
+      if ((rtc.getHour(h12,  PM) >= 10) && (rtc.getHour(h12,  PM) <= 11)) { // If Hours is a double digit in 24 hours mode
         tft.setCursor(pos_X_SC + 10, pos_Y_SC);
-        tft.fillRect(pos_X_SC + 10, pos_Y_SC, 22, 14, BLACK);
+        tft.fillRect(pos_X_SC + 10, pos_Y_SC, 22, 14, WHITE);
         currentHours = rtc.getHour(h12, PM); // Get new current time
         tft.print(currentHours); // Print curent hours
       }
-      else if ((rtc.getHour(h12,  PM) >= 0) && (rtc.getHour(h12,  PM) < 10)) { // If Hours is a single digit in 24 hours mode
-        tft.fillRect(pos_X_SC + 10, pos_Y_SC, 22, 14, BLACK);
+      else if (rtc.getHour(h12,  PM) == 12) {
+        PM = !PM;
         tft.setCursor(pos_X_SC + 10, pos_Y_SC);
-        tft.print('0');
-        tft.setCursor(pos_X_SC + 22, pos_Y_SC);
+        tft.fillRect(pos_X_SC + 20, pos_Y_SC, pos_X_SC + 65, pos_Y_SC + 20, BLACK);
+        currentHours = rtc.getHour(h12,  PM); // Get new current time
+        tft.print(currentHours); // Print curent hours
+      }
+      else if ((rtc.getHour(h12,  PM) >= 0) && (rtc.getHour(h12,  PM) < 10)) { // If Hours is a single digit in 24 hours mode
+        tft.setCursor(pos_X_SC + 65, pos_Y_SC);
+        tft.fillRect(pos_X_SC + 65, pos_Y_SC, pos_X_SC + 15, pos_Y_SC + 20, BLACK);
         currentHours = rtc.getHour(h12,  PM);
         tft.print(currentHours); // Print curent hours
 
       }
-      tft.setCursor(pos_X_SC - 20, pos_Y_SC);
+      tft.setCursor(pos_X_SC - 10, pos_Y_SC);
       tft.setTextSize(text_Size);
       tft.setTextColor(RED);
       if (PM) {
@@ -635,10 +707,10 @@ void drawSmallClock() {
   }
 
   // Draw column
-  draw_Column(pos_X_SC + 35, pos_Y_SC, pos_Y_SC + 7, GREEN);
+  draw_Small_Column(pos_X_SC + 35, pos_Y_SC, pos_Y_SC + 7, GREEN);
 
   // Returning size and color to the value of 2 and green again
-  tft.setTextSize(text_Size); // Size is 1
+  tft.setTextSize(text_Size + 1); // Size is 1
   tft.setTextColor(GREEN); // Color is green
 
   //   Minutes update
@@ -660,9 +732,9 @@ void drawSmallClock() {
       tft.print(currentMinutes); // Print minutes
     }
   }
-
+  
   // Draw column
-  draw_Column(pos_X_SC + 68, pos_Y_SC, pos_Y_SC + 7, GREEN);
+  draw_Small_Column(pos_X_SC + 68, pos_Y_SC, pos_Y_SC + 7, GREEN);
 
   // Draw seconds
   if (currentSeconds != rtc.getSecond()) {
@@ -880,16 +952,6 @@ void draw_Media_Screen() {
   drawBackButton();
   drawDayOfTheWeek();
   drawSmallClock();
-  drawRadioButton();
-}
-
-void draw_Radio_Screen() {
-  // Draw date/time/temp/day of the week
-  drawTemp();
-  drawDate();
-  drawBackButton();
-  drawDayOfTheWeek();
-  drawSmallClock();
 }
 
 void draw_Alarm_Screen() {
@@ -917,11 +979,10 @@ void setup() {
   // Boot in a Home Screen mode
   currentPage = 0;
 
-  // Initiation of RTC objects;
-  // set_Clock(19, 28, 28, true); // Upload Hours( First integer) an 24 hour format even for 12hr mod.
-  // Add 28 seconds to upload time.  Last one is h12 state. false for 24 HR
-  //   set_Date(11, 30, 17, 5); // Last one is the day of the week 1 = Sunday
-
+  //  Initiation of RTC objects;
+    set_Clock(22, 0, 0, true); // Upload Hours( First integer) is 24 hour format. Add 26 seconds to upload time.  Last one is h12 state. false for 24 HR
+  // set_Date(11, 28, 17, 3); // Last one is the day of the week 1 = Sunday
+  // rtc.setHour(8);
   // Draw home screen
   drawHomeScreen();
 }
@@ -1012,25 +1073,6 @@ void loop() {
     draw_Media_Screen();
     touch_Screen_Read();
 
-    // If we press radio button
-    if ((xpos >= 180) && (xpos <= 300) && (ypos >= 105) && (ypos <= 215)) {
-      
-      // Zero touch input
-      xpos = -1;
-      ypos = -1;
-
-      // Zero all data is used in a next screen
-      zeroAllData();
-
-      // Set sceren black
-      tft.fillScreen(BLACK); // Sets the background color of the area where the text will be printed to black
-
-      // Draw Radio screen
-      draw_Radio_Screen();
-      currentPage = 4;
-    }
-
-    // If we press back button
     if ((ypos > tft.height() - 40) && (xpos < 40)) {
       zeroAllData();
       currentPage = 0;
@@ -1041,8 +1083,6 @@ void loop() {
   if (currentPage == 3) {
     draw_Alarm_Screen();
     touch_Screen_Read();
-
-    // If we pressing back button
     if ((ypos > tft.height() - 40) && (xpos < 40)) {
       zeroAllData();
       currentPage = 0;
@@ -1050,15 +1090,6 @@ void loop() {
     }
 
   }
-  if (currentPage == 4) {
-    draw_Radio_Screen();
-    touch_Screen_Read();
 
-    // If we pressing back button
-    if ((ypos > tft.height() - 40) && (xpos < 40)) {
-      zeroAllData();
-      currentPage = 0;
-      drawHomeScreen();
-    }
-  }
 }
+

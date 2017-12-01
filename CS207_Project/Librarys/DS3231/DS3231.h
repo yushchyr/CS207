@@ -68,8 +68,7 @@ class DS3231 {
 		// the get*() functions retrieve current values of the registers.
 		byte getSecond(); 
 		byte getMinute(); 
-		byte getHour(bool& h12); // Modified Entery by Roman Y.
-		byte getHours(bool& h12, bool& PM); // Aditonal Entery by Roman Y.
+		byte getHour(bool& h12, bool& PM); 
 			// In addition to returning the hour register, this function
 			// returns the values of the 12/24-hour flag and the AM/PM flag.
 		byte getDoW(); 

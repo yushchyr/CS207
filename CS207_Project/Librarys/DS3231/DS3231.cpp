@@ -173,28 +173,9 @@ byte DS3231::getMinute() {
 	return bcdToDec(Wire.read());
 }
 
-byte DS3231::getHour(bool& h12) { // Removed bool& PM // Modified Entery by Roman Y.
+byte DS3231::getHour(bool& h12, bool& PM) {
 	byte temp_buffer;
 	byte hour;
-
-
-	Wire.beginTransmission(CLOCK_ADDRESS);
-	Wire.write(0x02);
-	Wire.endTransmission();
-
-	Wire.requestFrom(CLOCK_ADDRESS, 1);
-	temp_buffer = Wire.read();
-	h12 = temp_buffer & 0b01000000;
-	hour = bcdToDec(temp_buffer & 0b00011111);
-	hour = bcdToDec(temp_buffer & 0b00111111);
-	return hour;
-}
-
-byte DS3231::getHours(bool& h12, bool& PM) { // Additional Entery by Roman Y.
-	byte temp_buffer;
-	byte hour;
-
-
 	Wire.beginTransmission(CLOCK_ADDRESS);
 	Wire.write(0x02);
 	Wire.endTransmission();
@@ -205,11 +186,10 @@ byte DS3231::getHours(bool& h12, bool& PM) { // Additional Entery by Roman Y.
 	if (h12) {
 		PM = temp_buffer & 0b00100000;
 		hour = bcdToDec(temp_buffer & 0b00011111);
-	}
-	else {
+	} else {
 		hour = bcdToDec(temp_buffer & 0b00111111);
 	}
-	return hour; PM;
+	return hour;
 }
 
 byte DS3231::getDoW() {
