@@ -64,7 +64,7 @@ int pos_Y;
 #define DarkGreen       0x03E0      /*   0, 128,   0 */
 #define DarkCyan        0x03EF      /*   0, 128, 128 */
 #define Maroon          0x7800      /* 128,   0,   0 */
-#define Purple          0x780F      /* 128,   0, 128 */
+#define PURPULE          0x780F      /* 128,   0, 128 */
 #define Olive           0x7BE0      /* 128, 128,   0 */
 #define LightGrey       0xC618      /* 192, 192, 192 */
 #define DarkGrey        0x7BEF      /* 128, 128, 128 */
@@ -683,10 +683,8 @@ void drawSmallClock() {
   }
 }
 
-void drawAlarmButton() {
+void drawAlarmButton(int pos_X, int pos_Y) {
   extern const uint8_t AlarmButton[0x1040];
-  pos_X = 365;
-  pos_Y = 170;
   tft.setAddrWindow(pos_X, pos_Y, pos_X + 64, pos_Y + 65);
   tft.pushColors(AlarmButton, 4160, 1);
 }
@@ -869,7 +867,7 @@ void drawHomeScreen() {
   drawTemp();
   drawDate();
   drawHomeClock();
-  drawAlarmButton();
+  drawAlarmButton(365, 170);
   drawMediaButton();
   drawPaintButton();
 }
@@ -892,12 +890,38 @@ void draw_Radio_Screen() {
   drawSmallClock();
 }
 
+void checkAlarmStatus(int n) {
+  if (rtc.checkIfAlarm(n)) {
+    tft.println("On");
+  }
+  else {
+    tft.println("Off");
+  }
+}
+
 void draw_Alarm_Screen() {
   drawTemp();
   drawDate();
   drawBackButton();
   drawDayOfTheWeek();
   drawSmallClock();
+  drawAlarmButton(100, 100);
+  // draw alarm one
+  tft.setCursor(81, 165);
+  tft.setTextColor(GreenYellow);
+  tft.print("Alarm One");
+  tft.setCursor(81, 180);
+  checkAlarmStatus(1);
+
+  // Draw Alarm two
+  drawAlarmButton(tft.width() - 164, 100);
+  tft.setCursor(tft.width() - 185, 165);
+  tft.print("Alarm Two");
+  tft.setCursor(tft.width() - 185, 175);
+  checkAlarmStatus(2);
+
+
+
 }
 
 
@@ -994,6 +1018,7 @@ void loop() {
 
       // Change scren count
       currentPage = 3;
+      draw_Alarm_Screen();
     }
   }
 
@@ -1014,17 +1039,13 @@ void loop() {
 
     // If we press radio button
     if ((xpos >= 180) && (xpos <= 300) && (ypos >= 105) && (ypos <= 215)) {
-      
       // Zero touch input
       xpos = -1;
       ypos = -1;
-
       // Zero all data is used in a next screen
       zeroAllData();
-
       // Set sceren black
       tft.fillScreen(BLACK); // Sets the background color of the area where the text will be printed to black
-
       // Draw Radio screen
       draw_Radio_Screen();
       currentPage = 4;
@@ -1039,7 +1060,6 @@ void loop() {
   }
 
   if (currentPage == 3) {
-    draw_Alarm_Screen();
     touch_Screen_Read();
 
     // If we pressing back button
