@@ -1213,7 +1213,7 @@ void loop() {
       drawHomeScreen();
     }
     // If we press alarm 1 icon
-    if ((xpos >= 70) && ( xpos <= 170) && (ypos >= 70) && (ypos <= 170)) {
+    if ((xpos >= 10) && ( xpos <= 240) && (ypos >= 10) && (ypos <= 150)) {
       zeroAllData();
       draw_Set_Alarm_Screen();
       currentPage = 5;
