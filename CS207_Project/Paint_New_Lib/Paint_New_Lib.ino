@@ -222,6 +222,8 @@ void drawRadioButton() {
 }
 
 void zeroAllData() {
+  xpos = -1;
+  ypos = -1;
   currentHours = -1;
   currentMinutes = -1;
   currentSeconds = -1;
@@ -936,7 +938,9 @@ void draw_Alarm_Screen() {
     tft.setCursor(154, 214);
     tft.print(A1Minute);
   }
-
+  // Draw Set and Clear buttons
+  tft.drawRect(81, 220, 91, 250);
+  
   // Draw Alarm two
   drawAlarmButton(tft.width() - 164, 100);
   tft.setCursor(tft.width() - 185, 165);
@@ -990,9 +994,6 @@ void draw_Alarm_Screen() {
     tft.setCursor(tft.width() - 112, 214);
     tft.print(A1Minute);
   }
-
-
-
 }
 
 
@@ -1013,12 +1014,12 @@ void setup() {
   currentPage = 0;
 
   // Initiation of RTC objects;
-  rtc.getHour(h12, PM); // This line is here to get h12 and PM values
+  // rtc.getHour(h12, PM); // This line is here to get h12 and PM values
   // set_Clock(19, 28, 28, true); // Upload Hours( First integer) an 24 hour format even for 12hr mod.
   // Add 28 seconds to upload time.  Last one is h12 state. false for 24 HR
   // set_Date(11, 30, 17, 5); // Last one is the day of the week 1 = Sunday
-  setAlarm(1, 5, 12, 28, 30, 0x0 , true, false , false);
-  setAlarm(2, 5, 12, 28, 30, 0x0 , true, false , false);
+  // setAlarm(1, 5, 12, 28, 30, 0x0 , true, false , false);
+  // setAlarm(2, 5, 12, 28, 30, 0x0 , true, false , false);
   // 1 - Which alarm (1 or 2)
   // 2 - Day of the week or Date
   // 3 - Hour
@@ -1053,9 +1054,6 @@ void loop() {
 
     // If we press media button
     if ((ypos >= pos_Y_MPB) && (ypos <= pos_Y_MPB + 65) && (xpos >= pos_X_MPB) && (xpos <= pos_X_MPB + 65)) {
-      // Clear screen input values after clicking on paint Button. Prevents red dot in a center before you touch paint screen.
-      xpos = -1;
-      ypos = -1;
       // Zero all data is used in a next screen
       zeroAllData();
       // Set sceren black
@@ -1071,9 +1069,8 @@ void loop() {
     if ((ypos >= pos_Y_PB) && (ypos <= pos_Y_PB + 65) && (xpos >= pos_X_PB) && (xpos <= pos_X_PB + 65)) {
       // Change scren count
       currentPage = 1;
-      // Clear screen input values after clicking on paint Button. Prevents red dot in a center before you touch paint screen.
-      xpos = -1;
-      ypos = -1;
+      // Zero all data is used in a next screen
+      zeroAllData();
       // Draw color selection and a back button
       paint_Setup();
     }
@@ -1082,9 +1079,6 @@ void loop() {
     int pos_Y_AB = 170;
     // If we press Alarm button
     if ((ypos >= pos_Y_AB) && (ypos <= pos_Y_AB + 65) && (xpos >= pos_X_AB) && (xpos <= pos_X_AB + 65)) {
-      // Clear screen input values after clicking on paint Button. Prevents red dot in a center before you touch paint screen.
-      xpos = -1;
-      ypos = -1;
       // Zero all data is used in a next screen
       zeroAllData();
       // Set sceren black
@@ -1098,8 +1092,7 @@ void loop() {
 
   // Paint screen
   if (currentPage == 1) {
-    xpos = -1;
-    ypos = -1;
+    zeroAllData();
     touch_Screen_Read();
     if (xpos != -1) {
       paint_Loop();
@@ -1116,9 +1109,6 @@ void loop() {
     touch_Screen_Read();
     // If we press radio button
     if ((xpos >= 180) && (xpos <= 300) && (ypos >= 105) && (ypos <= 215)) {
-      // Zero touch input
-      xpos = -1;
-      ypos = -1;
       // Zero all data is used in a next screen
       zeroAllData();
       // Set sceren black
@@ -1129,8 +1119,6 @@ void loop() {
     }
     // If we press back button
     if ((ypos > tft.height() - 40) && (xpos < 40)) {
-      xpos = -1;
-      ypos = -1;
       zeroAllData();
       currentPage = 0;
       drawHomeScreen();
@@ -1148,8 +1136,6 @@ void loop() {
     touch_Screen_Read();
     // If we pressing back button
     if ((ypos > tft.height() - 40) && (xpos < 40)) {
-      xpos = -1;
-      ypos = -1;
       zeroAllData();
       currentPage = 0;
       drawHomeScreen();
@@ -1167,8 +1153,6 @@ void loop() {
     touch_Screen_Read();
     // If we pressing back button
     if ((ypos > tft.height() - 40) && (xpos < 40)) {
-      xpos = -1;
-      ypos = -1;
       zeroAllData();
       currentPage = 2;
       draw_Media_Screen();
