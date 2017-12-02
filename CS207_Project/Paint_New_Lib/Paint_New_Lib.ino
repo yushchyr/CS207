@@ -879,7 +879,7 @@ void getAlarm(byte& A1Day, byte& A1Hour, byte& A1Minute, byte& A1Second, byte& A
 
 void draw_Alarm_Screen() {
   drawSmallClock();
-  int X_A1 = 100;
+  int X_A1 = 60;
   int Y_A1 = 80;
   drawAlarmButton(X_A1, Y_A1);
   // draw alarm 1
@@ -958,7 +958,7 @@ void draw_Alarm_Screen() {
   tft.drawRect(X_A1 + 39, Y_A1 + 182, 50, 20, WHITE);
   // Draw plus and minus sighn
   tft.drawRect(X_A1 + 93, Y_A1 + 155, 60, 20, RED);
-  tft.setCursor(198, 235);
+  tft.setCursor(X_A1 + 98, 235);
   tft.setTextSize(3);
   tft.setTextColor(RED);
   tft.print(" + ");
