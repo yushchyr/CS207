@@ -1129,6 +1129,8 @@ void loop() {
     }
     // If we press back button
     if ((ypos > tft.height() - 40) && (xpos < 40)) {
+      xpos = -1;
+      ypos = -1;
       zeroAllData();
       currentPage = 0;
       drawHomeScreen();
@@ -1146,6 +1148,8 @@ void loop() {
     touch_Screen_Read();
     // If we pressing back button
     if ((ypos > tft.height() - 40) && (xpos < 40)) {
+      xpos = -1;
+      ypos = -1;
       zeroAllData();
       currentPage = 0;
       drawHomeScreen();
@@ -1163,9 +1167,11 @@ void loop() {
     touch_Screen_Read();
     // If we pressing back button
     if ((ypos > tft.height() - 40) && (xpos < 40)) {
+      xpos = -1;
+      ypos = -1;
       zeroAllData();
       currentPage = 2;
-      draw_Radio_Screen();
+      draw_Media_Screen();
     }
   }
 }
