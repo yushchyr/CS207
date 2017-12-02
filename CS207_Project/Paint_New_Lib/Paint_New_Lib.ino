@@ -54,9 +54,7 @@ uint16_t identifier, oldcolor, currentcolor;
 uint8_t Orientation = 1;    // Landscape orientaion is default
 char currentPage, playStatus;
 String alarmString = "";
-// Common start points for a Graphic block of elements
-int pos_X;
-int pos_Y;
+
 
 // Assign human-readable names to some common 16-bit color values:
 #define BLACK           0x0000      /*   0,   0,   0 */
@@ -97,6 +95,12 @@ bool A1Dy, A1h12, A1PM;
 byte A2Day, A2Hour, A2Minute, A2Bits;
 bool A2Dy, A2h12, A2PM;
 
+// Common start points for a Graphic block of elements
+  int pos_X;
+  int pos_Y;
+  int X_A1 = 60;
+  int Y_A1 = 80;
+  
 // Show Serial info Screen
 void show_Serial(void) {
   Serial.print(F("Found "));
@@ -879,8 +883,6 @@ void getAlarm(byte& A1Day, byte& A1Hour, byte& A1Minute, byte& A1Second, byte& A
 
 void draw_Alarm_Screen() {
   drawSmallClock();
-  int X_A1 = 60;
-  int Y_A1 = 80;
   drawAlarmButton(X_A1, Y_A1);
   // draw alarm 1
   tft.setCursor(X_A1-19, Y_A1 + 65);
