@@ -94,7 +94,7 @@ byte currentSeconds = -1;
 float temperature = -1;
 byte A1Day, A1Hour, A1Minute, A1Second, A1Bits;
 bool A1Dy, A1h12, A1PM;
-byte A2Day, A2Hour, A2Minute, A2Second, A2Bits;
+byte A2Day, A2Hour, A2Minute, A2Bits;
 bool A2Dy, A2h12, A2PM;
 
 // Show Serial info Screen
