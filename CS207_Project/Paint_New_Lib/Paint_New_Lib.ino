@@ -102,11 +102,19 @@ int newA1Hour = -1;
 int newA1Minute = -1;
 bool newA1Dy = -1;
 int newA1counter = 0;
+int newA1Date = -1;
+int minusA1Counter = 0;
+int plusA1Counter = 0;
+
+
 bool newAlarmTwo = false;
 int newA2Hour = -1;
 int newA2Minute = -1;
 bool newA2Dy = -1;
 int newA2counter = 0;
+int newA2Date = -1;
+
+
 
 
 // eeprom
@@ -955,7 +963,6 @@ void getAlarmWeeksFromEEPROM() {
 void draw_Alarm_Screen() {
   drawSmallClock(); // Initiate clock
   drawBackButton(); // Draw back button
-  getAlarmWeeksFromEEPROM(); // Get days of the week from EEPROM
 
   // draw alarm 1
   drawAlarmButton(X_A1, Y_A1);
@@ -1194,6 +1201,7 @@ void resetAlarmWhenDoW () {
     }
   }
 }
+
 void setup() {
   // Begin serial
   Serial.begin(9600);
@@ -1236,7 +1244,6 @@ void setup() {
   
   // Get current alarm status
   getAlarm(A1Day, A1Hour, A1Minute, A1Second, A1Bits, A1Dy, A1h12, A1PM, A2Day, A2Hour, A2Minute, A2Bits, A2Dy, A2h12, A2PM);
-  
   // Draw home screen
   drawHomeScreen();
 
@@ -1295,7 +1302,7 @@ void loop() {
       tft.fillScreen(BLACK); // Sets the background color of the area where the text will be printed to black
       // Get both alarms
       getAlarm(A1Day, A1Hour, A1Minute, A1Second, A1Bits, A1Dy, A1h12, A1PM, A2Day, A2Hour, A2Minute, A2Bits, A2Dy, A2h12, A2PM);
-
+      getAlarmWeeksFromEEPROM(); // Get days of the week from EEPROM
       // Draw alarm screen
       draw_Alarm_Screen();
       // Change scren count
@@ -1382,7 +1389,7 @@ void loop() {
     }
     
     // if we press Date to DoW switch
-    if ((xpos >= X_A1 - 3) && (xpos <= X_A1 + 15) && (ypos >= Y_A1 + 137) && (ypos >= Y_A1 + 157)) {
+    if ((xpos >= X_A1 - 3) && (xpos <= X_A1 + 15) && (ypos >= Y_A1 + 157) && (ypos <= Y_A1 + 177)) {
       xpos = -1;
       ypos = -1;
       newAlarmOne = true;
@@ -1397,13 +1404,24 @@ void loop() {
         newA1Dy = !A1Dy;
         newA1counter++;
        }
-   if(!newA1Dy){
+   if(!newA1Dy){  // Draw selection of the day in a curent month
           drawCheckMarkWhite(X_A1 + 13, Y_A1 + 159);
+          newA1Date = 0;
+          newA1Date = newA1Date + plusA1Counter - minusA1Counter;
+          tft.setTextColor(PINK);
+          tft.setCursor(X_A1 + 50, Y_A1 + 159);
+          tft.print(newA1Date);
+          tft.setTextColor(GREEN); // Reset text Color to default choice
           delay(t);
         }
         
    else {
-        tft.fillRect(X_A1 + 12, Y_A1 + 158, 18, 18, RED);
+    // Draw black box over both areas and reset counters
+        tft.fillRect(X_A1 + 12, Y_A1 + 158, 18, 18, BLACK);
+        tft.fillRect(X_A1 + 50, Y_A1 + 158, 22, 18, BLACK);
+        newA1Date = 0;
+        minusA1Counter = 0;
+        plusA1Counter = 0;
         delay(t);
    }
         
