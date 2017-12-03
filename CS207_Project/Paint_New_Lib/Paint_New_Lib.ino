@@ -1212,10 +1212,11 @@ void setup() {
   // 7 - True to set day of the week. False to set alarm for a specific date in a month.
   // 8 - True for 12Hr format and false for 24 Hr
   // 9 - True for PM and false for AM
-  for(int i = 0; i <=6; i++){
-    EEPROM.write(eeAddressAlarmOne + i, alarmOneWeek[i]);
-    Serial.println(EEPROM.get(eeAddressAlarmOne + i, alarmOneWeek[i]));
-  }
+  // For loop for debagging EEPROM
+  //  for(int i = 0; i <=6; i++){
+  //    EEPROM.write(eeAddressAlarmOne + i, alarmOneWeek[i]);
+  //    Serial.println(EEPROM.get(eeAddressAlarmOne + i, alarmOneWeek[i]));
+  //  }
 
   // Draw home screen
   drawHomeScreen();
