@@ -95,8 +95,8 @@ byte A1Day, A1Hour, A1Minute, A1Second, A1Bits;
 bool A1Dy, A1h12, A1PM;
 byte A2Day, A2Hour, A2Minute, A2Bits;
 bool A2Dy, A2h12, A2PM;
-bool alarmOneWeek[7];
-bool alarmTwoWeek[7];
+bool alarmOneWeek[7] = {false,false,false,false,false,false,false};
+bool alarmTwoWeek[7]= {false,false,false,false,false,false,false};
 // eeprom
 int eeAddressAlarmOne = 0;
 int eeAddressAlarmTwo = 7;
@@ -919,11 +919,15 @@ void setAlarm(int a, byte ADay, byte AHour, byte AMinute, byte ASeconds, byte Al
 
 void getAlarm(byte& A1Day, byte& A1Hour, byte& A1Minute, byte& A1Second, byte& A1Bits, bool& A1Dy, bool& A1h12, bool& A1PM, byte& A2Day, byte& A2Hour, byte& A2Minute, byte& A2Bits, bool& A2Dy, bool& A2h12, bool& A2PM) {
   rtc.getA1Time(A1Day, A1Hour, A1Minute, A1Second, A1Bits, A1Dy, A1h12, A1PM);
-  for(int i = 0; i <=6; i++){
+  rtc.getA2Time(A2Day, A2Hour, A2Minute, A2Bits, A2Dy, A2h12, A2PM);
+
+}
+
+void getAlarmWeeksFromEEPROM() {
+  for (int i = 0; i <= 6; i++) {
     EEPROM.get(eeAddressAlarmOne + i, alarmOneWeek[i]);
   }
-  rtc.getA2Time(A2Day, A2Hour, A2Minute, A2Bits, A2Dy, A2h12, A2PM);
-    for(int i = 0; i <=6; i++){
+  for (int i = 0; i <= 6; i++) {
     EEPROM.get(eeAddressAlarmTwo + i, alarmTwoWeek[i]);
   }
 }
@@ -931,6 +935,11 @@ void getAlarm(byte& A1Day, byte& A1Hour, byte& A1Minute, byte& A1Second, byte& A
 void draw_Alarm_Screen() {
   drawSmallClock(); // Initiate clock
   drawBackButton(); // Draw back button
+  getAlarmWeeksFromEEPROM(); // Get days of the week from EEPROM
+  
+  // Get both alarms
+  getAlarm(A1Day, A1Hour, A1Minute, A1Second, A1Bits, A1Dy, A1h12, A1PM, A2Day, A2Hour, A2Minute, A2Bits, A2Dy, A2h12, A2PM);
+  
   // draw alarm 1
   drawAlarmButton(X_A1, Y_A1);
   tft.setCursor(X_A1 - 19, Y_A1 + 65);
@@ -1203,7 +1212,10 @@ void setup() {
   // 7 - True to set day of the week. False to set alarm for a specific date in a month.
   // 8 - True for 12Hr format and false for 24 Hr
   // 9 - True for PM and false for AM
-
+  for(int i = 0; i <=6; i++){
+    EEPROM.write(eeAddressAlarmOne + i, alarmOneWeek[i]);
+    Serial.println(EEPROM.get(eeAddressAlarmOne + i, alarmOneWeek[i]));
+  }
 
   // Draw home screen
   drawHomeScreen();
@@ -1221,11 +1233,11 @@ void loop() {
     drawHomeClock();
     // Read touch screen input
     touch_Screen_Read();
-    
+
     // Coordinates of a Media button
     int  pos_X_MPB = 50;
     int  pos_Y_MPB = 170;
-    
+
     // If we press media button
     if ((ypos >= pos_Y_MPB) && (ypos <= pos_Y_MPB + 65) && (xpos >= pos_X_MPB) && (xpos <= pos_X_MPB + 65)) {
       // Zero all data is used in a next screen
@@ -1236,12 +1248,12 @@ void loop() {
       draw_Media_Screen();
       currentPage = 2;
     }
-    
+
     // Coordinates of a paint button
     int pos_X_PB = 207;
     int pos_Y_PB = 170;
     // If we press paint button
-    
+
     if ((ypos >= pos_Y_PB) && (ypos <= pos_Y_PB + 65) && (xpos >= pos_X_PB) && (xpos <= pos_X_PB + 65)) {
       // Change scren count
       currentPage = 1;
@@ -1250,11 +1262,11 @@ void loop() {
       // Draw color selection and a back button
       paint_Setup();
     }
-    
+
     // Coordinates of an Alarm button
     int pos_X_AB = 365;
     int pos_Y_AB = 170;
-    
+
     // If we press Alarm button
     if ((ypos >= pos_Y_AB) && (ypos <= pos_Y_AB + 65) && (xpos >= pos_X_AB) && (xpos <= pos_X_AB + 65)) {
       // Zero all data is used in a next screen
@@ -1263,8 +1275,6 @@ void loop() {
       tft.fillScreen(BLACK); // Sets the background color of the area where the text will be printed to black
       // Change scren count
       currentPage = 3;
-      // Get both alarms
-      getAlarm(A1Day, A1Hour, A1Minute, A1Second, A1Bits, A1Dy, A1h12, A1PM, A2Day, A2Hour, A2Minute, A2Bits, A2Dy, A2h12, A2PM);
       // Draw alarm screen
       draw_Alarm_Screen();
     }
@@ -1499,11 +1509,11 @@ void loop() {
         delay(t);
       }
     }
-//    if ((xpos >= X_A1 - 19) && (xpos <= X_A1 + 31) && (ypos >= Y_A1 + 182) && (ypos <= Y_A1 + 207));
-//    // Zero touchscreen
-//    xpos = -1;
-//    ypos = -1;
-//    tft.fillScreen(BLACK);
+    //    if ((xpos >= X_A1 - 19) && (xpos <= X_A1 + 31) && (ypos >= Y_A1 + 182) && (ypos <= Y_A1 + 207));
+    //    // Zero touchscreen
+    //    xpos = -1;
+    //    ypos = -1;
+    //    tft.fillScreen(BLACK);
   }
 
   // Radio screen
