@@ -95,11 +95,24 @@ byte A1Day, A1Hour, A1Minute, A1Second, A1Bits;
 bool A1Dy, A1h12, A1PM;
 byte A2Day, A2Hour, A2Minute, A2Bits;
 bool A2Dy, A2h12, A2PM;
-bool alarmOneWeek[7] = {false,false,false,false,false,false,false};
-bool alarmTwoWeek[7]= {false,false,false,false,false,false,false};
+bool alarmOneWeek[7] = {false, false, false, false, false, false, false};
+bool alarmTwoWeek[7] = {false, false, false, false, false, false, false};
+bool newAlarmOne = false;
+int newA1Hour = -1;
+int newA1Minute = -1;
+bool newA1Dy = -1;
+int newA1counter = 0;
+bool newAlarmTwo = false;
+int newA2Hour = -1;
+int newA2Minute = -1;
+bool newA2Dy = -1;
+int newA2counter = 0;
+
+
 // eeprom
 int eeAddressAlarmOne = 0;
 int eeAddressAlarmTwo = 7;
+
 // Common start points for a Graphic block of elements
 int pos_X; // Home clock
 int pos_Y;
@@ -107,6 +120,7 @@ int X_A1 = 60; // Alarm 1
 int Y_A1 = 80;
 int X_A2 = 316; // Alarm 2
 int Y_A2 = 80;
+
 // Delay time for checkmarks
 int t = 200;
 
@@ -236,6 +250,12 @@ void drawCheckMarkRed(int x, int y) {
   extern const uint8_t CheckMarkRed[256];
   tft.setAddrWindow(x, y, x + 15, y + 16);
   tft.pushColors(CheckMarkRed, 256, 1);
+}
+
+void drawCheckMarkWhite(int x, int y) {
+  extern const uint8_t CheckMarkWhite[256];
+  tft.setAddrWindow(x, y, x + 15, y + 16);
+  tft.pushColors(CheckMarkWhite, 256, 1);
 }
 
 void drawRadioButton() {
@@ -936,10 +956,7 @@ void draw_Alarm_Screen() {
   drawSmallClock(); // Initiate clock
   drawBackButton(); // Draw back button
   getAlarmWeeksFromEEPROM(); // Get days of the week from EEPROM
-  
-  // Get both alarms
-  getAlarm(A1Day, A1Hour, A1Minute, A1Second, A1Bits, A1Dy, A1h12, A1PM, A2Day, A2Hour, A2Minute, A2Bits, A2Dy, A2h12, A2PM);
-  
+
   // draw alarm 1
   drawAlarmButton(X_A1, Y_A1);
   tft.setCursor(X_A1 - 19, Y_A1 + 65);
@@ -1018,6 +1035,7 @@ void draw_Alarm_Screen() {
 
   // Draw current settings date
   tft.drawRect(X_A1 + 39, Y_A1 + 157, 50, 20, WHITE);
+
   // Draw plus and minus sighn
   tft.drawRect(X_A1 + 93, Y_A1 + 182, 60, 20, RED);
   tft.setCursor(X_A1 + 98, Y_A1 + 182);
@@ -1132,12 +1150,10 @@ void draw_Set_Alarm_Screen() {
 }
 
 void resetAlarmWhenDoW () {
-  // Get current alarm status
-  getAlarm(A1Day, A1Hour, A1Minute, A1Second, A1Bits, A1Dy, A1h12, A1PM, A2Day, A2Hour, A2Minute, A2Bits, A2Dy, A2h12, A2PM);
-  Serial.print("Day of the week: ");
-  Serial.println(rtc.getDoW());
-  Serial.print("Alarm set day: ");
-  Serial.println(A1Day);
+  //  Serial.print("Day of the week: ");
+  //  Serial.println(rtc.getDoW());
+  //  Serial.print("Alarm set day: ");
+  //  Serial.println(A1Day);
   if (rtc.getDoW() != A1Day) {
     for (int i = rtc.getDoW(); i <= 6; i++) {
       Serial.print("EEProm alterantion #");
@@ -1217,7 +1233,10 @@ void setup() {
   //    EEPROM.write(eeAddressAlarmOne + i, alarmOneWeek[i]);
   //    Serial.println(EEPROM.get(eeAddressAlarmOne + i, alarmOneWeek[i]));
   //  }
-
+  
+  // Get current alarm status
+  getAlarm(A1Day, A1Hour, A1Minute, A1Second, A1Bits, A1Dy, A1h12, A1PM, A2Day, A2Hour, A2Minute, A2Bits, A2Dy, A2h12, A2PM);
+  
   // Draw home screen
   drawHomeScreen();
 
@@ -1253,8 +1272,8 @@ void loop() {
     // Coordinates of a paint button
     int pos_X_PB = 207;
     int pos_Y_PB = 170;
-    // If we press paint button
 
+    // If we press paint button
     if ((ypos >= pos_Y_PB) && (ypos <= pos_Y_PB + 65) && (xpos >= pos_X_PB) && (xpos <= pos_X_PB + 65)) {
       // Change scren count
       currentPage = 1;
@@ -1274,10 +1293,13 @@ void loop() {
       zeroAllData();
       // Set sceren black
       tft.fillScreen(BLACK); // Sets the background color of the area where the text will be printed to black
-      // Change scren count
-      currentPage = 3;
+      // Get both alarms
+      getAlarm(A1Day, A1Hour, A1Minute, A1Second, A1Bits, A1Dy, A1h12, A1PM, A2Day, A2Hour, A2Minute, A2Bits, A2Dy, A2h12, A2PM);
+
       // Draw alarm screen
       draw_Alarm_Screen();
+      // Change scren count
+      currentPage = 3;
     }
   }
 
@@ -1352,12 +1374,53 @@ void loop() {
       }
       if (alarmOneWeek[6]) {
         drawCheckMarkRed(X_A1 + 93, Y_A1 + 134);
-
       }
     }
 
+    if (!A1Dy) {
+      drawCheckMarkWhite(X_A1 + 13, Y_A1 + 159);
+    }
+    
+    // if we press Date to DoW switch
+    if ((xpos >= X_A1 - 3) && (xpos <= X_A1 + 15) && (ypos >= Y_A1 + 137) && (ypos >= Y_A1 + 157)) {
+      xpos = -1;
+      ypos = -1;
+      newAlarmOne = true;
+       if(newA1counter == 0){
+        newA1Dy = !A1Dy;
+        newA1counter++;
+       }else if (newA1counter%2 == 0){
+        newA1Dy = A1Dy;
+        newA1counter++;
+       }
+       else if (newA1counter%2 == 1){
+        newA1Dy = !A1Dy;
+        newA1counter++;
+       }
+   if(!newA1Dy){
+          drawCheckMarkWhite(X_A1 + 13, Y_A1 + 159);
+          delay(t);
+        }
+        
+   else {
+        tft.fillRect(X_A1 + 12, Y_A1 + 158, 18, 18, RED);
+        delay(t);
+   }
+        
+ }
+     
+    // If we press set button
+    if ((xpos >= X_A1 - 33) && (xpos <= X_A1 + 14) && (ypos >= Y_A1 + 182) && (ypos <= Y_A1 + 207)) {
+      // Zero touchscreen
+      xpos = -1;
+      ypos = -1;
+      tft.fillScreen(BLACK);
+      drawBackButton();
+    }
+  }
+
     // If we pressing back button
-    if ((ypos > tft.height() - 40) && (xpos < 40)) {
+    if ((ypos > tft.height() - 35) && (xpos <= 20)) {
       zeroAllData();
       currentPage = 0;
       drawHomeScreen();
@@ -1510,13 +1573,8 @@ void loop() {
         delay(t);
       }
     }
-    //    if ((xpos >= X_A1 - 19) && (xpos <= X_A1 + 31) && (ypos >= Y_A1 + 182) && (ypos <= Y_A1 + 207));
-    //    // Zero touchscreen
-    //    xpos = -1;
-    //    ypos = -1;
-    //    tft.fillScreen(BLACK);
-  }
 
+  
   // Radio screen
   if (currentPage == 4) {
     // Draw date/time/temp/day of the week
