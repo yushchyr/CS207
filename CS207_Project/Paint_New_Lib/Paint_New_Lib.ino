@@ -94,13 +94,18 @@ byte A1Day, A1Hour, A1Minute, A1Second, A1Bits;
 bool A1Dy, A1h12, A1PM;
 byte A2Day, A2Hour, A2Minute, A2Bits;
 bool A2Dy, A2h12, A2PM;
+bool alarmOneWeek[7] = {false, false, false, false, false, false, false};
+bool alarmTwoWeek[7] = {false, false, false, false, false, false, false};
 
 // Common start points for a Graphic block of elements
-  int pos_X;
-  int pos_Y;
-  int X_A1 = 60;
-  int Y_A1 = 80;
-  
+int pos_X;
+int pos_Y;
+int X_A1 = 60;
+int Y_A1 = 80;
+
+// Delay time for checkmarks
+int t = 200;
+
 // Show Serial info Screen
 void show_Serial(void) {
   Serial.print(F("Found "));
@@ -215,6 +220,18 @@ void drawEraseButton() {
   pos_Y = tft.height() - 35;
   tft.setAddrWindow(pos_X, pos_Y, pos_X + 31, pos_Y + 32);
   tft.pushColors(EraseButton, 1024, 1);
+}
+
+void drawCheckMark(int x, int y) {
+  extern const uint8_t CheckMark[256];
+  tft.setAddrWindow(x, y, x + 15, y + 16);
+  tft.pushColors(CheckMark, 256, 1);
+}
+
+void drawCheckMarkRed(int x, int y) {
+  extern const uint8_t CheckMarkRed[256];
+  tft.setAddrWindow(x, y, x + 15, y + 16);
+  tft.pushColors(CheckMarkRed, 256, 1);
 }
 
 void drawRadioButton() {
@@ -711,7 +728,7 @@ void drawDate() {
     int    pos_Y_Date = 7;
     tft.fillRect(pos_X_Date, pos_Y_Date, 107, 14, BLACK);
     if (rtc.getMonth(Century) < 10) tft.setCursor(pos_X_Date + 10, pos_Y_Date);
-    else tft.setCursor(pos_X_Date -2, pos_Y_Date);
+    else tft.setCursor(pos_X_Date - 2, pos_Y_Date);
     tft.print(rtc.getMonth(Century), DEC);
     tft.setCursor(pos_X_Date + 18 , pos_Y_Date);
     tft.print(".");
@@ -744,25 +761,25 @@ void dow() {
   DoW = rtc.getDoW(); //  Get new day of the week
   // Day of the week switch case
   switch (DoW) {
-    case 1:
+    case 0:
       day_Of_The_Week = "Sunday";
       break;
-    case 2:
+    case 1:
       day_Of_The_Week = "Monday";
       break;
-    case 3:
+    case 2:
       day_Of_The_Week = "Tuesday";
       break;
-    case 4:
+    case 3:
       day_Of_The_Week = "Wednesday";
       break;
-    case 5:
+    case 4:
       day_Of_The_Week = "Thursday";
       break;
-    case 6:
+    case 5:
       day_Of_The_Week = "Friday";
       break;
-    case 7:
+    case 6:
       day_Of_The_Week = "Saturday";
       break;
   }
@@ -775,37 +792,37 @@ void drawDayOfTheWeek() {
     tft.fillRect(369, 23, 106, 17, BLACK);
     tft.setTextSize(2); // Sets font to big
     pos_X = tft.width() - 107;
-    if (DoW == 1) {
+    if (DoW == 0) {
       tft.setTextColor(GREEN);
+      tft.setCursor(pos_X + 32, 24);
+      tft.print(day_Of_The_Week);
+    }
+    if (DoW == 1) {
+      tft.setTextColor(YELLOW);
       tft.setCursor(pos_X + 32, 24);
       tft.print(day_Of_The_Week);
     }
     if (DoW == 2) {
       tft.setTextColor(YELLOW);
-      tft.setCursor(pos_X + 32, 24);
+      tft.setCursor(pos_X + 20, 24);
       tft.print(day_Of_The_Week);
     }
     if (DoW == 3) {
       tft.setTextColor(YELLOW);
-      tft.setCursor(pos_X + 20, 24);
+      tft.setCursor(pos_X - 4, 24);
       tft.print(day_Of_The_Week);
     }
     if (DoW == 4) {
       tft.setTextColor(YELLOW);
-      tft.setCursor(pos_X - 4, 24);
+      tft.setCursor(pos_X + 8, 24);
       tft.print(day_Of_The_Week);
     }
     if (DoW == 5) {
       tft.setTextColor(YELLOW);
-      tft.setCursor(pos_X + 8, 24);
-      tft.print(day_Of_The_Week);
-    }
-    if (DoW == 6) {
-      tft.setTextColor(YELLOW);
       tft.setCursor(pos_X + 32, 24);
       tft.print(day_Of_The_Week);
     }
-    if (DoW == 7) {
+    if (DoW == 6) {
       tft.setTextColor(GREEN);
       tft.setCursor(pos_X + 8, 24);
       tft.print(day_Of_The_Week);
@@ -885,16 +902,16 @@ void draw_Alarm_Screen() {
   drawSmallClock();
   drawAlarmButton(X_A1, Y_A1);
   // draw alarm 1
-  tft.setCursor(X_A1-19, Y_A1 + 65);
+  tft.setCursor(X_A1 - 19, Y_A1 + 65);
   tft.setTextColor(GreenYellow);
   tft.print("Alarm One");
-  tft.setCursor(X_A1-19, Y_A1 + 81);
+  tft.setCursor(X_A1 - 19, Y_A1 + 81);
   tft.print("Status:");
   checkAlarmStatus(1);
-  tft.setCursor(X_A1-19, Y_A1 + 97);
+  tft.setCursor(X_A1 - 19, Y_A1 + 97);
   tft.setTextColor(GreenYellow);
   tft.print("Set for:");
-  tft.setCursor(X_A1-19, Y_A1 + 113);
+  tft.setCursor(X_A1 - 19, Y_A1 + 113);
   tft.setTextColor(RED);
   if (A1h12) {
     if (A1PM) {
@@ -920,7 +937,7 @@ void draw_Alarm_Screen() {
       // Draw column
       draw_Column(X_A1 + 37, Y_A1 + 117, Y_A1 + 123, 1, GREEN);
       // Draw alarm 1 minutes
-      tft.setCursor(X_A1 + 42, Y_A1 +114);
+      tft.setCursor(X_A1 + 42, Y_A1 + 114);
       tft.print(A1Minute);
     }
   } else {
@@ -1066,9 +1083,9 @@ void draw_Alarm_Screen() {
 
 }
 
-void draw_Set_Alarm_Screen(){
+void draw_Set_Alarm_Screen() {
   tft.fillScreen(BLACK);
-  
+
 }
 
 void setup() {
@@ -1208,18 +1225,193 @@ void loop() {
     drawDayOfTheWeek();
     drawSmallClock();
     touch_Screen_Read();
+
+    // Check stored values for an alarm
+    for (int i = 0; i <= 6; i++) {
+      if (alarmOneWeek[0]) {
+        drawCheckMarkRed(X_A1 - 39, Y_A1 + 134);
+      }
+      if (alarmOneWeek[1]) {
+        drawCheckMark(X_A1 - 17, Y_A1 + 134);
+
+      }
+      if (alarmOneWeek[2]) {
+        drawCheckMark(X_A1 + 5, Y_A1 + 134);
+      }
+      if (alarmOneWeek[3]) {
+        drawCheckMark(X_A1 + 27, Y_A1 + 134);
+
+      }
+      if (alarmOneWeek[4]) {
+        drawCheckMark(X_A1 + 49, Y_A1 + 134);
+
+      }
+      if (alarmOneWeek[5]) {
+        drawCheckMark(X_A1 + 71, Y_A1 + 134);
+
+      }
+      if (alarmOneWeek[6]) {
+        drawCheckMarkRed(X_A1 + 93, Y_A1 + 134);
+
+      }
+    }
+
     // If we pressing back button
     if ((ypos > tft.height() - 40) && (xpos < 40)) {
       zeroAllData();
       currentPage = 0;
       drawHomeScreen();
     }
+
     // If we press alarm 1 icon
     if ((xpos >= X_A1 - 20) && ( xpos <= X_A1 + 80) && (ypos >= Y_A1 - 40) && (ypos <= X_A1 + 90)) {
       zeroAllData();
       draw_Set_Alarm_Screen();
       currentPage = 5;
     }
+
+
+    // If we click in the first check Box
+    if ((xpos >= X_A1 - 42) && (xpos <= X_A1 - 34) && (ypos >= Y_A1 + 132) && (ypos <= Y_A1 + 152)) {
+      // If button is on or off
+      if (alarmOneWeek[0] == false) {
+        // Zero touchscreen
+        xpos = -1;
+        ypos = -1;
+        drawCheckMarkRed(X_A1 - 39, Y_A1 + 134);
+        alarmOneWeek[0] = true;
+        delay(t);
+      } else {
+        // Zero touchscreen
+        xpos = -1;
+        ypos = -1;
+        tft.fillRect(X_A1 - 40, Y_A1 + 133, 18, 18, BLACK);
+        alarmOneWeek[0] = false;
+        delay(t);
+      }
+    }
+
+    // If we click in the second check Box
+    if ((xpos >= X_A1 - 33) && (xpos <= X_A1 - 17) && (ypos >= Y_A1 + 132) && (ypos <= Y_A1 + 152)) {
+      // If button is on or off
+      if (alarmOneWeek[1] == false) {
+        // Zero touchscreen
+        xpos = -1;
+        ypos = -1;
+        drawCheckMark(X_A1 - 17, Y_A1 + 134);
+        alarmOneWeek[1] = true;
+        delay(t);
+      } else {
+        // Zero touchscreen
+        xpos = -1;
+        ypos = -1;
+        tft.fillRect(X_A1 - 18, Y_A1 + 133, 18, 18, BLACK);
+        alarmOneWeek[1] = false;
+        delay(t);
+      }
+    }
+
+    // If we click in the check Box #3
+    if ((xpos >= X_A1 - 11) && (xpos <= X_A1 + 7) && (ypos >= Y_A1 + 132) && (ypos <= Y_A1 + 152)) {
+      // If button is on or off
+      if (alarmOneWeek[2] == false) {
+        // Zero touchscreen
+        xpos = -1;
+        ypos = -1;
+        drawCheckMark(X_A1 + 5, Y_A1 + 134);
+        alarmOneWeek[2] = true;
+        delay(t);
+      } else {
+        // Zero touchscreen
+        xpos = -1;
+        ypos = -1;
+        tft.fillRect(X_A1 + 4, Y_A1 + 133, 18, 18, BLACK);
+        alarmOneWeek[2] = false;
+        delay(t);
+      }
+    }
+
+    // If we click in the check Box #4
+    if ((xpos >= X_A1 + 11) && (xpos <= X_A1 + 29) && (ypos >= Y_A1 + 132) && (ypos <= Y_A1 + 152)) {
+      // If button is on or off
+      if (alarmOneWeek[3] == false) {
+        // Zero touchscreen
+        xpos = -1;
+        ypos = -1;
+        drawCheckMark(X_A1 + 27, Y_A1 + 134);
+        alarmOneWeek[3] = true;
+        delay(t);
+      } else {
+        // Zero touchscreen
+        xpos = -1;
+        ypos = -1;
+        tft.fillRect(X_A1 + 26, Y_A1 + 133, 18, 18, BLACK);
+        alarmOneWeek[3] = false;
+        delay(t);
+      }
+    }
+
+    // If we click in the check Box #5
+    if ((xpos >= X_A1 + 33) && (xpos <= X_A1 + 51) && (ypos >= Y_A1 + 132) && (ypos <= Y_A1 + 152)) {
+      // If button is on or off
+      if (alarmOneWeek[4] == false) {
+        // Zero touchscreen
+        xpos = -1;
+        ypos = -1;
+        drawCheckMark(X_A1 + 49, Y_A1 + 134);
+        alarmOneWeek[4] = true;
+        delay(t);
+      } else {
+        // Zero touchscreen
+        xpos = -1;
+        ypos = -1;
+        tft.fillRect(X_A1 + 48, Y_A1 + 133, 18, 18, BLACK);
+        alarmOneWeek[4] = false;
+        delay(t);
+      }
+    }
+
+    // If we click in the check Box #6
+    if ((xpos >= X_A1 + 55) && (xpos <= X_A1 + 73) && (ypos >= Y_A1 + 132) && (ypos <= Y_A1 + 152)) {
+      // If button is on or off
+      if (alarmOneWeek[5] == false) {
+        // Zero touchscreen
+        xpos = -1;
+        ypos = -1;
+        drawCheckMark(X_A1 + 71, Y_A1 + 134);
+        alarmOneWeek[5] = true;
+        delay(t);
+      } else {
+        // Zero touchscreen
+        xpos = -1;
+        ypos = -1;
+        tft.fillRect(X_A1 + 70, Y_A1 + 133, 18, 18, BLACK);
+        alarmOneWeek[5] = false;
+        delay(t);
+      }
+    }
+
+    // If we click in the check Box #7
+    if ((xpos >= X_A1 + 77) && (xpos <= X_A1 + 95) && (ypos >= Y_A1 + 132) && (ypos <= Y_A1 + 152)) {
+      // If button is on or off
+      if (alarmOneWeek[6] == false) {
+        // Zero touchscreen
+        xpos = -1;
+        ypos = -1;
+        drawCheckMarkRed(X_A1 + 93, Y_A1 + 134);
+        alarmOneWeek[6] = true;
+        delay(t);
+      } else {
+        // Zero touchscreen
+        xpos = -1;
+        ypos = -1;
+        tft.fillRect(X_A1 + 92, Y_A1 + 133, 18, 18, BLACK);
+        alarmOneWeek[6] = false;
+        delay(t);
+      }
+    }
+
+
   }
 
   // Radio screen
@@ -1239,7 +1431,7 @@ void loop() {
     }
   }
 
-//  Additional screen to set time of the alalrm;
+  //  Additional screen to set time of the alalrm;
   if (currentPage == 5) {
     drawTemp();
     drawDate();
