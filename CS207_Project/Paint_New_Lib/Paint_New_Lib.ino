@@ -1427,7 +1427,7 @@ void loop() {
     }
 
     // If we press alarm 1 icon
-    if ((xpos >= X_A1 - 20) && ( xpos <= X_A1 + 80) && (ypos >= Y_A1 - 40) && (ypos <= X_A1 + 90)) {
+    if ((xpos >= X_A1 - 15) && ( xpos <= X_A1 + 80) && (ypos >= Y_A1 - 40) && (ypos <= X_A1 + 90)) {
       zeroAllData();
       draw_Set_Alarm_Screen();
       currentPage = 5;
