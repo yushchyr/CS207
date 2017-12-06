@@ -881,10 +881,15 @@ void drawAlarmStatus() {
   }
 }
 
+void drawBackground(){
+  
+}
+
 void drawHomeScreen() {
   zeroAllData();
   DoW = rtc.getDoW(); //  Get new day of the week
   tft.fillScreen(BLACK); // Sets the background color of the area where the text will be printed to black
+  drawBackground();
   drawAlarmStatus();
   drawDayOfTheWeek();
   drawTemp();
