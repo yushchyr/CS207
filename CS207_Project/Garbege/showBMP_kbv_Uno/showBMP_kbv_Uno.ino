@@ -19,14 +19,15 @@ MCUFRIEND_kbv tft;
 #define PALETTEDEPTH   0     // do not support Palette modes
 //#define PALETTEDEPTH   8     // support 256-colour Palette
 
-char namebuf[32] = "/";   //BMP files in root directory
-//char namebuf[32] = "/bitmaps/";  //BMP directory e.g. files in /bitmaps/*.bmp
+//char namebuf[32] = "/";   //BMP files in root directory
+char namebuf[32] = "/BG/";  //BMP directory e.g. files in /bitmaps/*.bmp
 
 File root;
 int pathlen;
 
 void setup()
 {
+
     uint16_t ID;
     Serial.begin(115200);
     Serial.print("Show BMP files on TFT with ID:0x");
@@ -34,6 +35,11 @@ void setup()
     Serial.println(ID, HEX);
     if (ID == 0x0D3D3) ID = 0x9481;
     tft.begin(ID);
+
+    //  Set orientation to landskape
+    tft.setRotation(1);
+
+    
     tft.fillScreen(0x001F);
     tft.setTextColor(0xFFFF, 0x0000);
     bool good = SD.begin(SD_CS);
@@ -181,7 +187,11 @@ uint8_t showBMP(char *nm, int x, int y)
         }
 
         // Set TFT address window to clipped image bounds
-        tft.setRotation(1);
+
+
+
+
+        
         tft.setAddrWindow(x, y, x + w - 1, y + h - 1);
         for (row = 0; row < h; row++) { // For each scanline...
             // Seek to start of scan line.  It might seem labor-
