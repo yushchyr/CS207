@@ -20,7 +20,7 @@ MCUFRIEND_kbv tft;
 //#define PALETTEDEPTH   8     // support 256-colour Palette
 
 //char namebuf[32] = "/";   //BMP files in root directory
-char namebuf[32] = "/BG/";  //BMP directory e.g. files in /bitmaps/*.bmp
+char namebuf[32] = "/BACKGR~1/";  //BMP directory e.g. files in /bitmaps/*.bmp
 
 File root;
 int pathlen;
@@ -54,16 +54,17 @@ void setup()
 void loop()
 {
     char *nm = namebuf + pathlen;
-    File f = root.openNextFile();
+    //root.rewindDirectory();
+    //File f = root.openNextFile;
     uint8_t ret;
     uint32_t start;
-    if (f != NULL) {
+    if (root != NULL) {
 #ifdef USE_SDFAT
-        f.getName(nm, 32 - pathlen);
+        root.getName(nm, 32 - pathlen);
 #else
-        strcpy(nm, (char *)f.name());
+        strcpy(nm, (char *)root.name());
 #endif
-        f.close();
+        root.close();
         strlwr(nm);
         if (strstr(nm, ".bmp") != NULL && strstr(nm, NAMEMATCH) != NULL) {
             Serial.print(namebuf);
