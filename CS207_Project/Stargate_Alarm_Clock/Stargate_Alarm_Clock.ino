@@ -21,7 +21,7 @@ MCUFRIEND_kbv tft;       // hard-wired for UNO shields anyway.
 #define F(string_literal) string_literal
 #endif
 
-// BMP
+// BMP Background
 #include <SD.h>
 #define SD_CS     10
 #define NAMEMATCH "" // "" matches any name
@@ -493,8 +493,8 @@ void drawHomeClock() {
       }
 
       else if ((rtc.getHour(h12,  PM) >= 0) && (rtc.getHour(h12,  PM) < 10)) { // If Hours is a single digit in 24 hours mode
-        tft.fillRect(pos_X + 5, pos_Y, 115, 70, BLACK);
-        tft.setCursor(pos_X + 10, pos_Y);
+        tft.fillRect(pos_X + 5, pos_Y, pos_X + 60, pos_Y + 5, BLACK);
+        tft.setCursor(pos_X + 5, pos_Y);
         tft.print('0');
         tft.setCursor(pos_X + 65, pos_Y);
         currentHours = rtc.getHour(h12,  PM);
@@ -522,7 +522,7 @@ void drawHomeClock() {
       currentMinutes = rtc.getMinute(); // Getting new minutes
       tft.setTextSize(10);
       tft.setTextColor(GREEN);
-      tft.fillRect(pos_X + 145, pos_Y, pos_X + 75, pos_Y + 20, BLACK);
+      tft.fillRect(pos_X + 145, pos_Y, pos_X + 60, pos_Y + 5, BLACK);
       tft.setCursor(pos_X + 145, pos_Y); // Set cursor
       tft.print('0');
       tft.setCursor(pos_X + 205, pos_Y); // Set cursor
@@ -533,7 +533,7 @@ void drawHomeClock() {
       tft.setTextSize(10);
       tft.setTextColor(GREEN);
       tft.setCursor(pos_X + 145, pos_Y); // Set cursor
-      tft.fillRect(pos_X + 145, pos_Y, pos_X + 75, pos_Y + 20, BLACK);
+      tft.fillRect(pos_X + 145, pos_Y, pos_X + 60, pos_Y + 5, BLACK);
       tft.print(currentMinutes); // Print minutes
     }
   }
@@ -544,7 +544,7 @@ void drawHomeClock() {
   if (currentSeconds != rtc.getSecond()) {
     if ((rtc.getSecond() >= 0) && (rtc.getSecond() < 10)) {
       currentSeconds = rtc.getSecond(); // Getting new Seconds
-      tft.fillRect(pos_X + 285, pos_Y, pos_X + 75, pos_Y + 20, BLACK);
+      tft.fillRect(pos_X + 285, pos_Y, pos_X + 60, pos_Y + 5, BLACK);
       tft.setCursor(pos_X + 285, pos_Y);
       tft.print('0');
       tft.setCursor(pos_X + 285 + 60, pos_Y); // Set cursor
@@ -553,7 +553,7 @@ void drawHomeClock() {
     else {
       currentSeconds = rtc.getSecond(); // Getting new Seconds
       tft.setCursor(pos_X + 285, pos_Y); // Set cursor
-      tft.fillRect(pos_X + 285, pos_Y, pos_X + 75, pos_Y + 20, BLACK);
+      tft.fillRect(pos_X + 285, pos_Y, pos_X + 60, pos_Y + 5, BLACK);
       tft.print(currentSeconds); // Print Seconds
     }
   }
@@ -701,7 +701,8 @@ void drawTemp() {
     pos_X = 7;
     pos_Y = 6;
     temperature = rtc.getTemperature();
-    tft.fillRect(pos_X + 25, pos_Y, 58, 15, BLACK);
+    tft.fillRect(pos_X + 25, pos_Y, pos_X + 15, pos_Y + 9, BLACK);
+    tft.fillRect(pos_X + 61, pos_Y, pos_X + 15, pos_Y + 9, BLACK);
     tft.setTextColor(WHITE); // Sets color to white
     tft.setTextSize(2); // Sets font to big
     tft.setCursor(pos_X, 7);
@@ -725,7 +726,7 @@ void drawDate() {
     tft.setTextSize(2); // Sets font to big
     int     pos_X_Date = tft.width() - 107;
     int    pos_Y_Date = 7;
-    tft.fillRect(pos_X_Date, pos_Y_Date, 107, 14, BLACK);
+    tft.fillRect(pos_X_Date, pos_Y_Date, 102, 14, BLACK);
     if (rtc.getMonth(Century) < 10) tft.setCursor(pos_X_Date + 10, pos_Y_Date);
     else tft.setCursor(pos_X_Date - 2, pos_Y_Date);
     tft.print(rtc.getMonth(Century), DEC);
@@ -1009,7 +1010,7 @@ uint8_t showBMP(char *nm, int x, int y)
 void drawBackgroundLoop() {
 
   char *nm = namebuf + pathlen;
-  //root.rewindDirectory();
+  //root.rewindDirectory(); // To display only the first image
   File f = root.openNextFile();
   uint8_t ret;
   uint32_t start;
