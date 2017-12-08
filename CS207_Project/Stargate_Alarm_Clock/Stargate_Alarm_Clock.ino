@@ -4,6 +4,7 @@
   Alarm clock
 */
 
+
 // Intialisation
 #include <EEPROM.h>
 #include <Wire.h>
@@ -21,15 +22,27 @@ MCUFRIEND_kbv tft;       // hard-wired for UNO shields anyway.
 #define F(string_literal) string_literal
 #endif
 
-// BMP Background
-#include <SD.h>
+// SD Initiation
+#include <BlockDriver.h>
+#include <FreeStack.h>
+#include <MinimumSerial.h>
+#include <SdFat.h>
+#include <SdFatConfig.h>
+#include <SysCall.h>
 #define SD_CS     10
+#include <SPI.h>             // f.k. for Arduino-1.5.2
+#define USE_SDFAT
+SdFat SD; //Bit-Bang on the Shield pins
+
+
+// BMP Background
 #define NAMEMATCH "" // "" matches any name
 //#define NAMEMATCH "tiger"   // *tiger*.bmp
 #define PALETTEDEPTH   0     // do not support Palette modes
 //#define PALETTEDEPTH   8     // support 256-colour Palette
 //char namebuf[32] = "/";   //BMP files in root directory
 char namebuf[32] = "/BACKGR~1/";  //BMP directory e.g. files in /bitmaps/*.bmp
+
 File root;
 int pathlen;
 #define BMPIMAGEOFFSET 54
@@ -120,7 +133,7 @@ bool newAlarmOne = false;
 int newA1Hour = -1;
 int newA1Minute = -1;
 bool newA1Dy = -1;
-int newA1counter = 0;
+int newA1counter = -1;
 int newA1Date = -1;
 int minusA1Counter = 0;
 int plusA1Counter = 0;
@@ -486,8 +499,8 @@ void drawHomeClock() {
     else if (h12 == true) { // If clock in 12 hours format
 
       if ((rtc.getHour(h12,  PM) >= 10) && (rtc.getHour(h12,  PM) <= 12)) { // If Hours is a double digit in 24 hours mode
-        tft.setCursor(pos_X + 10, pos_Y);
-        tft.fillRect(pos_X + 20, pos_Y, pos_X + 65, pos_Y + 20, BLACK);
+        tft.setCursor(pos_X + 5, pos_Y);
+        tft.fillRect(pos_X + 5, pos_Y, pos_X + 60, pos_Y + 20, BLACK);
         currentHours = rtc.getHour(h12,  PM); // Get new current time
         tft.print(currentHours); // Print curent hours
       }
@@ -862,8 +875,7 @@ uint32_t read32(File& f) {
   return result;
 }
 
-uint8_t showBMP(char *nm, int x, int y)
-{
+uint8_t showBMP(char *nm, int x, int y) {
   File bmpFile;
   int bmpWidth, bmpHeight;    // W+H in pixels
   uint8_t bmpDepth;           // Bit depth (currently must be 24, 16, 8, 4, 1)
@@ -1062,7 +1074,6 @@ void drawBackgroundLoop() {
 void drawHomeScreen() {
   zeroAllData();
   DoW = rtc.getDoW(); //  Get new day of the week
-  tft.fillScreen(BLACK); // Sets the background color of the area where the text will be printed to black
   drawBackgroundLoop();
   drawAlarmStatus();
   drawDayOfTheWeek();
@@ -1383,6 +1394,37 @@ void resetAlarmWhenDoW () {
   }
 }
 
+void checkDoW() {
+  // Check stored values for an alarm One
+  for (int i = 0; i <= 6; i++) {
+    if (alarmOneWeek[0]) {
+      drawCheckMarkRed(X_A1 - 39, Y_A1 + 134);
+    }
+    if (alarmOneWeek[1]) {
+      drawCheckMark(X_A1 - 17, Y_A1 + 134);
+
+    }
+    if (alarmOneWeek[2]) {
+      drawCheckMark(X_A1 + 5, Y_A1 + 134);
+    }
+    if (alarmOneWeek[3]) {
+      drawCheckMark(X_A1 + 27, Y_A1 + 134);
+
+    }
+    if (alarmOneWeek[4]) {
+      drawCheckMark(X_A1 + 49, Y_A1 + 134);
+
+    }
+    if (alarmOneWeek[5]) {
+      drawCheckMark(X_A1 + 71, Y_A1 + 134);
+
+    }
+    if (alarmOneWeek[6]) {
+      drawCheckMarkRed(X_A1 + 93, Y_A1 + 134);
+    }
+  }
+}
+
 void setup() {
   // Begin serial
   Serial.begin(9600);
@@ -1423,8 +1465,7 @@ void setup() {
   //    Serial.println(EEPROM.get(eeAddressAlarmOne + i, alarmOneWeek[i]));
   //  }
 
-  // Get current alarm status
-  getAlarm(A1Day, A1Hour, A1Minute, A1Second, A1Bits, A1Dy, A1h12, A1PM, A2Day, A2Hour, A2Minute, A2Bits, A2Dy, A2h12, A2PM);
+  // Get SD backround
   bool good = SD.begin(SD_CS);
   if (!good) {
     Serial.print(F("cannot start SD"));
@@ -1432,6 +1473,8 @@ void setup() {
   }
   root = SD.open(namebuf);
   pathlen = strlen(namebuf);
+  // Get current alarm status
+  getAlarm(A1Day, A1Hour, A1Minute, A1Second, A1Bits, A1Dy, A1h12, A1PM, A2Day, A2Hour, A2Minute, A2Bits, A2Dy, A2h12, A2PM);
   // Draw home screen
   drawHomeScreen();
 
@@ -1493,14 +1536,10 @@ void loop() {
       getAlarmWeeksFromEEPROM(); // Get days of the week from EEPROM
       // Draw alarm screen
       draw_Alarm_Screen();
-      if (!A1Dy) {
-        drawCheckMarkWhite(X_A1 + 13, Y_A1 + 159);
-        newA1Date = A1Day;
-        tft.setTextSize(2);
-        tft.setTextColor(PINK);
-        tft.setCursor(X_A1 + 50, Y_A1 + 159);
-        tft.print(newA1Date);
-      }
+
+      // Set new A1DoW
+      newA1Dy = A1Dy;
+
       // Change scren count
       currentPage = 3;
     }
@@ -1524,6 +1563,7 @@ void loop() {
     drawDayOfTheWeek();
     drawSmallClock();
     touch_Screen_Read();
+    
     // If we press radio button
     if ((xpos >= 180) && (xpos <= 300) && (ypos >= 105) && (ypos <= 215)) {
       // Zero all data is used in a next screen
@@ -1551,72 +1591,36 @@ void loop() {
     drawSmallClock();
     touch_Screen_Read();
 
-    // Check stored values for an alarm One
-    for (int i = 0; i <= 6; i++) {
-      if (alarmOneWeek[0]) {
-        drawCheckMarkRed(X_A1 - 39, Y_A1 + 134);
-      }
-      if (alarmOneWeek[1]) {
-        drawCheckMark(X_A1 - 17, Y_A1 + 134);
-
-      }
-      if (alarmOneWeek[2]) {
-        drawCheckMark(X_A1 + 5, Y_A1 + 134);
-      }
-      if (alarmOneWeek[3]) {
-        drawCheckMark(X_A1 + 27, Y_A1 + 134);
-
-      }
-      if (alarmOneWeek[4]) {
-        drawCheckMark(X_A1 + 49, Y_A1 + 134);
-
-      }
-      if (alarmOneWeek[5]) {
-        drawCheckMark(X_A1 + 71, Y_A1 + 134);
-
-      }
-      if (alarmOneWeek[6]) {
-        drawCheckMarkRed(X_A1 + 93, Y_A1 + 134);
-      }
-    }
-
-
-
     // if we press Date to DoW switch
     if ((xpos >= X_A1 - 3) && (xpos <= X_A1 + 15) && (ypos >= Y_A1 + 157) && (ypos <= Y_A1 + 177)) {
       xpos = -1;
       ypos = -1;
+      newA1Dy = !newA1Dy;
       newAlarmOne = true;
-      if (newA1counter == 0) {
-        newA1Dy = !newA1Dy;
-        newA1counter++;
-      } else if (newA1counter % 2 == 0) {
-        newA1Dy = A1Dy;
-        newA1counter++;
+      delay(t);
+     }
+    
+    if (!newA1Dy) { // Draw selection of the day in a curent month 
+      drawCheckMarkWhite(X_A1 + 13, Y_A1 + 159);
+      newA1Date = A1Day;
+      newA1Date = newA1Date + plusA1Counter - minusA1Counter;
+      tft.setTextColor(PINK);
+      tft.setCursor(X_A1 + 50, Y_A1 + 159);
+      tft.print(newA1Date);
+       tft.fillRect(X_A1 - 40, Y_A1 + 133, 18, 18, BLACK);
+        tft.fillRect(X_A1 - 18, Y_A1 + 133, 18, 18, BLACK);
+        tft.fillRect(X_A1 + 4, Y_A1 + 133, 18, 18, BLACK);
+        tft.fillRect(X_A1 + 26, Y_A1 + 133, 18, 18, BLACK);
+        tft.fillRect(X_A1 + 48, Y_A1 + 133, 18, 18, BLACK);
+        tft.fillRect(X_A1 + 70, Y_A1 + 133, 18, 18, BLACK);
+        tft.fillRect(X_A1 + 92, Y_A1 + 133, 18, 18, BLACK);
       }
-      else if (newA1counter % 2 == 1) {
-        newA1Dy = !A1Dy;
-        newA1counter++;
-      }
-      if (!newA1Dy) { // Draw selection of the day in a curent month
-        drawCheckMarkWhite(X_A1 + 13, Y_A1 + 159);
-        newA1Date = A1Day;
-        newA1Date = newA1Date + plusA1Counter - minusA1Counter;
-        tft.setTextColor(PINK);
-        tft.setCursor(X_A1 + 50, Y_A1 + 159);
-        tft.print(newA1Date);
-        delay(t);
-      }
-      else {
-        // Draw black box over both areas and reset counters
-        tft.fillRect(X_A1 + 12, Y_A1 + 158, 18, 18, BLACK);
-        tft.fillRect(X_A1 + 50, Y_A1 + 158, 22, 18, BLACK);
-        newA1Date = 0;
-        minusA1Counter = 0;
-        plusA1Counter = 0;
-        delay(t);
-      }
-
+    else {      
+      // Draw check marks
+      checkDoW();
+      // Draw black box over both areas and reset counters
+       tft.fillRect(X_A1 + 12, Y_A1 + 158, 18, 18, BLACK);
+       tft.fillRect(X_A1 + 50, Y_A1 + 158, 22, 18, BLACK);
     }
 
     // If we press set button
@@ -1642,7 +1646,7 @@ void loop() {
       currentPage = 5;
     }
 
-
+if(newA1Dy){
     // If we click in the first check Box
     if ((xpos >= X_A1 - 45) && (xpos <= X_A1 - 34) && (ypos >= Y_A1 + 132) && (ypos <= Y_A1 + 154)) {
       // If button is on or off
@@ -1783,7 +1787,7 @@ void loop() {
       }
     }
   }
-
+}
   // Radio screen
   if (currentPage == 4) {
     // Draw date/time/temp/day of the week
@@ -1812,6 +1816,7 @@ void loop() {
       currentPage = 3;
       draw_Alarm_Screen();
     }
+    // resetAlarmWhenDoW();
   }
-  // resetAlarmWhenDoW();
+
 }
