@@ -1159,6 +1159,9 @@ void draw_Alarm_Screen() {
   drawSmallClock(); // Initiate clock
   drawBackButton(); // Draw back button
   getAlarmWeeksFromEEPROM(); // Check EEPROM for stored values
+  if (A1Dy){
+    checkDoW();
+  }
 
   // draw alarm 1
   drawAlarmButton(X_A1, Y_A1 - 30);
@@ -1191,11 +1194,11 @@ void draw_Alarm_Screen() {
       draw_Column(X_A1 + 36, Y_A1 + 97, Y_A1 + 118, 1, GREEN);
       // Draw alarm 1 minutes
       tft.setCursor(X_A1 + 42, Y_A1 + 94);
-      if(A1Minute < 10){
-          tft.print('0');
-          tft.setCursor(X_A1 + 66, Y_A1 + 94);
-          tft.print(A1Minute);
-      } else tft.print(A1Minute);    
+      if (A1Minute < 10) {
+        tft.print('0');
+        tft.setCursor(X_A1 + 66, Y_A1 + 94);
+        tft.print(A1Minute);
+      } else tft.print(A1Minute);
     }
     else {
       tft.print("AM");
@@ -1213,11 +1216,12 @@ void draw_Alarm_Screen() {
       draw_Column(X_A1 + 36, Y_A1 + 97, Y_A1 + 118, 1, GREEN);
       // Draw alarm 1 minutes
       tft.setCursor(X_A1 + 42, Y_A1 + 94);
-    if(A1Minute < 10){
+      if (A1Minute < 10) {
         tft.print('0');
         tft.setCursor(X_A1 + 66, Y_A1 + 94);
         tft.print(A1Minute);
-    } else tft.print(A1Minute);    }
+      } else tft.print(A1Minute);
+    }
   } else { // 24 hours format
     tft.print("24H");
     tft.setCursor(X_A1, Y_A1 + 94);
@@ -1234,13 +1238,14 @@ void draw_Alarm_Screen() {
     // Draw column
     draw_Column(X_A1 + 49, Y_A1 + 97, Y_A1 + 118, 1, GREEN);
     // Draw alarm 1 minutes
-    tft.setCursor(X_A1 + 54, Y_A1 + 94);
-    if(A1Minute < 10){
-        tft.print('0');
-        tft.setCursor(X_A1 + 66, Y_A1 + 94);
-        tft.print(A1Minute);
+    tft.setCursor(X_A1 + 55, Y_A1 + 94);
+    if (A1Minute < 10) {
+      tft.print('0');
+      tft.setCursor(X_A1 + 79, Y_A1 + 94);
+      tft.print(A1Minute);
     } else tft.print(A1Minute);
   }
+
   // Draw day check boxses
   tft.drawRect(X_A1 - 41, Y_A1 + 132, 20, 20, WHITE);
   tft.drawRect(X_A1 - 19, Y_A1 + 132, 20, 20, WHITE);
@@ -1336,12 +1341,19 @@ void draw_Alarm_Screen() {
     // Set color to blue
     tft.setTextColor(BLUE);
     // Print Hour
-    tft.print(A2Hour);
-    // Draw column
+    if (newA2Hour < 10) {
+      tft.print('0');
+      tft.setCursor(X_A2 + 24, Y_A2 + 94);
+      tft.print(A2Hour);
+    } else tft.print(A2Hour);    // Draw column
     draw_Column(X_A2 + 49, Y_A2 + 97, Y_A2 + 118, 1, GREEN);
     // Draw alarm 1 minutes
-    tft.setCursor(X_A2 + 54, Y_A2 + 94);
-    tft.print(A1Minute);
+    tft.setCursor(X_A2 + 55, Y_A2 + 94);
+    if (A2Minute < 10) {
+      tft.print('0');
+      tft.setCursor(X_A2 + 79, Y_A1 + 94);
+      tft.print(A2Minute);
+    } else tft.print(A2Minute);
   }
   // Draw day check boxses
   tft.drawRect(X_A2 - 41, Y_A2 + 132, 20, 20, WHITE);
@@ -1480,8 +1492,8 @@ void setup() {
   // set_Clock(19, 28, 28, true); // Upload Hours( First integer) an 24 hour format even for 12hr mod.
   // Add 28 seconds to upload time.  Last one is h12 state. false for 24 HR
   // set_Date(11, 30, 17, 5); // Last one is the day of the week 1 = Sunday
-    setAlarm(1, 4, 6, 30, 00, 0x0 , true, false , false);
-  // setAlarm(2, 5, 12, 28, 30, 0x0 , true, false , false);
+  // setAlarm(1, 4, 6, 30, 00, 0x0 , true, true , false);
+  // setAlarm(2, 5, 8, 8, 30, 0x0 , true, true , false);
   // 1 - Which alarm (1 or 2)
   // 2 - Day of the week or Date
   // 3 - Hour
@@ -1773,7 +1785,7 @@ void loop() {
             tft.print(newA1Hour);
           }
           else tft.print(newA1Hour); // Larger than 10
-        } 
+        }
         else if (newA1Hour == 23) {
           newA1Hour = 0;
           tft.print('0');
@@ -1790,22 +1802,33 @@ void loop() {
       delay(t);
       tft.setTextColor(BLUE);
       tft.setTextSize(4);
-      tft.fillRect(X_A1 + 42, Y_A1 + 94, 44, 28, BLACK);
-      tft.setCursor(X_A1 + 42, Y_A1 + 94);
+      if (!newA1h12) {
+        tft.fillRect(X_A1 + 55, Y_A1 + 94, 44, 28, BLACK);
+        tft.setCursor(X_A1 + 55, Y_A1 + 94);
+      }
+      else {
+        tft.fillRect(X_A1 + 43, Y_A1 + 94, 44, 28, BLACK);
+        tft.setCursor(X_A1 + 43, Y_A1 + 94);
+      }
       newA1Minute--;
       if (newA1Minute == -1) {
         newA1Minute = 59;
         tft.print(newA1Minute);
       }
-      else if((newA1Minute >= 0) && (newA1Minute <= 9)){
+      else if ((newA1Minute >= 0) && (newA1Minute <= 9)) {
         tft.print('0');
-        tft.setCursor(X_A1 + 66, Y_A1 + 94);
+        if (!newA1h12) {
+          tft.setCursor(X_A1 + 78, Y_A1 + 94);
+        }
+        else {
+          tft.setCursor(X_A1 + 66, Y_A1 + 94);
+        }
         tft.print(newA1Minute);
       }
-      else if ((newA1Minute >= 10) && (newA1Minute <= 60)){
+      else if ((newA1Minute >= 10) && (newA1Minute <= 60)) {
         tft.print(newA1Minute);
       }
-      
+
     }
 
     // If we press Plus button while alarm selector is at Minutes
@@ -1815,25 +1838,38 @@ void loop() {
       delay(t);
       tft.setTextColor(BLUE);
       tft.setTextSize(4);
-      tft.fillRect(X_A1 + 42, Y_A1 + 94, 44, 28, BLACK);
-      tft.setCursor(X_A1 + 42, Y_A1 + 94);
+      if (!newA1h12) {
+        tft.fillRect(X_A1 + 55, Y_A1 + 94, 44, 28, BLACK);
+        tft.setCursor(X_A1 + 55, Y_A1 + 94);
+      } else {
+        tft.fillRect(X_A1 + 43, Y_A1 + 94, 44, 28, BLACK);
+        tft.setCursor(X_A1 + 43, Y_A1 + 94);
+      }
+
       newA1Minute++;
-      if (newA1Minute == 60){
+      if (newA1Minute == 60) {
         newA1Minute = 0;
         tft.print('0');
-        tft.setCursor(X_A1 + 66, Y_A1 + 94);
-        tft.print(newA1Minute); 
+        if (!newA1h12) {
+          tft.setCursor(X_A1 + 78, Y_A1 + 94);
+        } else {
+          tft.setCursor(X_A1 + 66, Y_A1 + 94);
+        }
+        tft.print(newA1Minute);
       }
-      else if ((newA1Minute >= 10) && (newA1Minute < 60 )){
-        tft.print(newA1Minute); 
+      else if ((newA1Minute >= 10) && (newA1Minute < 60 )) {
+        tft.print(newA1Minute);
       }
-      else if ((newA1Minute >= 0) && (newA1Minute < 10)){
+      else if ((newA1Minute >= 0) && (newA1Minute < 10)) {
         tft.print('0');
-        tft.setCursor(X_A1 + 66, Y_A1 + 94);
+        if (!newA1h12) {
+          tft.setCursor(X_A1 + 78, Y_A1 + 94);
+        } else {
+          tft.setCursor(X_A1 + 66, Y_A1 + 94);
+        }
         tft.print(newA1Minute);
       }
     }
-    
 
     // if we press Date to DoW switch
     if ((xpos >= X_A1 - 3) && (xpos <= X_A1 + 15) && (ypos >= Y_A1 + 157) && (ypos <= Y_A1 + 177)) {
@@ -1893,7 +1929,7 @@ void loop() {
       tft.setCursor(X_A1 + 65, Y_A1 + 51);
       tft.fillRect(X_A1 + 65, Y_A1 + 51, 34, 14, BLACK);
       checkAlarmStatus(1);
-      
+
       // Draw one instead of current alarm 1 hour
       newA1Hour = 1;
       tft.setCursor(X_A1 - 11, Y_A1 + 94);
@@ -1911,13 +1947,13 @@ void loop() {
       tft.print('0');
       tft.setCursor(X_A1 + 63, Y_A1 + 94);
       tft.print(A1Minute);
-      
+
       newA1Dy = true;
-      for(int i = 0; i <=6; i++){
+      for (int i = 0; i <= 6; i++) {
         alarmOneWeek[i] = false;
         EEPROM.write(eeAddressAlarmOne + i, alarmOneWeek[i]);
       }
-      
+
     }
 
     // If we pressing back button
