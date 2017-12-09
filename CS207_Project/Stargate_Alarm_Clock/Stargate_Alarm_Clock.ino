@@ -1191,7 +1191,11 @@ void draw_Alarm_Screen() {
       draw_Column(X_A1 + 27, Y_A1 + 97, Y_A1 + 118, 1, GREEN);
       // Draw alarm 1 minutes
       tft.setCursor(X_A1 + 42, Y_A1 + 94);
-      tft.print(A1Minute);
+      if(A1Minute < 10){
+          tft.print('0');
+          tft.setCursor(X_A1 + 66, Y_A1 + 94);
+          tft.print(A1Minute);
+      } else tft.print(A1Minute);    
     }
     else {
       tft.print("AM");
@@ -1209,8 +1213,11 @@ void draw_Alarm_Screen() {
       draw_Column(X_A1 + 37, Y_A1 + 97, Y_A1 + 118, 1, GREEN);
       // Draw alarm 1 minutes
       tft.setCursor(X_A1 + 42, Y_A1 + 94);
-      tft.print(A1Minute);
-    }
+    if(A1Minute < 10){
+        tft.print('0');
+        tft.setCursor(X_A1 + 66, Y_A1 + 94);
+        tft.print(A1Minute);
+    } else tft.print(A1Minute);    }
   } else { // 24 hours format
     tft.print("24H");
     tft.setCursor(X_A1, Y_A1 + 94);
@@ -1228,7 +1235,11 @@ void draw_Alarm_Screen() {
     draw_Column(X_A1 + 49, Y_A1 + 97, Y_A1 + 118, 1, GREEN);
     // Draw alarm 1 minutes
     tft.setCursor(X_A1 + 54, Y_A1 + 94);
-    tft.print(A1Minute);
+    if(A1Minute < 10){
+        tft.print('0');
+        tft.setCursor(X_A1 + 66, Y_A1 + 94);
+        tft.print(A1Minute);
+    } else tft.print(A1Minute);
   }
   // Draw day check boxses
   tft.drawRect(X_A1 - 41, Y_A1 + 132, 20, 20, WHITE);
@@ -1294,11 +1305,11 @@ void draw_Alarm_Screen() {
       tft.setTextSize(4);
       // Set color to blue
       tft.setTextColor(BLUE);
-      // Print alarm 1 Hour
+      // Print alarm 2 Hour
       tft.print(A2Hour);
       // Draw column
       draw_Column(X_A2 + 37, Y_A2 + 97, Y_A2 + 118, 1, GREEN);
-      // Draw alarm 1 minutes
+      // Draw alarm 2 minutes
       tft.setCursor(X_A2 + 42, Y_A2 + 94);
       tft.print(A2Minute);
     }
@@ -1775,14 +1786,52 @@ void loop() {
       xpos = -1;
       ypos = -1;
       delay(t);
+      tft.setTextColor(BLUE);
+      tft.setTextSize(4);
+      tft.fillRect(X_A1 + 42, Y_A1 + 94, 44, 28, BLACK);
+      tft.setCursor(X_A1 + 42, Y_A1 + 94);
+      newA1Minute--;
+      if (newA1Minute == -1) {
+        newA1Minute = 59;
+        tft.print(newA1Minute);
+      }
+      else if((newA1Minute >= 0) && (newA1Minute <= 9)){
+        tft.print('0');
+        tft.setCursor(X_A1 + 66, Y_A1 + 94);
+        tft.print(newA1Minute);
+      }
+      else if ((newA1Minute >= 10) && (newA1Minute <= 60)){
+        tft.print(newA1Minute);
+      }
+      
     }
 
-    // If we press Plus button while alarm is selector is at Minutes
+    // If we press Plus button while alarm selector is at Minutes
     if ((newMinuteSelector) && (!newHourSelector) && (xpos >= X_A1 + 100) && (xpos <= X_A1 + 140) && (ypos >= Y_A1 + 180) && (ypos <= Y_A1 + 200)) {
       xpos = -1;
       ypos = -1;
       delay(t);
+      tft.setTextColor(BLUE);
+      tft.setTextSize(4);
+      tft.fillRect(X_A1 + 42, Y_A1 + 94, 44, 28, BLACK);
+      tft.setCursor(X_A1 + 42, Y_A1 + 94);
+      newA1Minute++;
+      if (newA1Minute == 60){
+        newA1Minute = 0;
+        tft.print('0');
+        tft.setCursor(X_A1 + 66, Y_A1 + 94);
+        tft.print(newA1Minute); 
+      }
+      else if ((newA1Minute >= 10) && (newA1Minute < 60 )){
+        tft.print(newA1Minute); 
+      }
+      else if ((newA1Minute >= 0) && (newA1Minute < 10)){
+        tft.print('0');
+        tft.setCursor(X_A1 + 66, Y_A1 + 94);
+        tft.print(newA1Minute);
+      }
     }
+    
 
     // if we press Date to DoW switch
     if ((xpos >= X_A1 - 3) && (xpos <= X_A1 + 15) && (ypos >= Y_A1 + 157) && (ypos <= Y_A1 + 177)) {
@@ -1826,9 +1875,47 @@ void loop() {
       ypos = -1;
       if (newAlarmOne) {
         setAlarm(1, newA1Day, newA1Hour, newA1Minute, A1Second, A1Bits, newA1Dy, newA1h12 , newA1PM);
-        
+        rtc.turnOnAlarm(1); // Turn alarm on
+        tft.setCursor(X_A1 + 65, Y_A1 + 51);
+        tft.fillRect(X_A1 + 65, Y_A1 + 51, 34, 14, BLACK);
+        checkAlarmStatus(1);
       }
+    }
 
+    // If we press clear button
+    if ((xpos >= X_A1 + 24) && (xpos <= X_A1 + 74) && (ypos >= Y_A1 + 182) && (ypos <= Y_A1 + 207)) {
+      // Zero touchscreen
+      xpos = -1;
+      ypos = -1;
+      rtc.turnOffAlarm(1);
+      tft.setCursor(X_A1 + 65, Y_A1 + 51);
+      tft.fillRect(X_A1 + 65, Y_A1 + 51, 34, 14, BLACK);
+      checkAlarmStatus(1);
+      
+      // Draw one instead of current alarm 1 hour
+      newA1Hour = 1;
+      tft.setCursor(X_A1 - 11, Y_A1 + 94);
+      tft.setTextColor(BLUE);
+      tft.setTextSize(4);
+      tft.fillRect(X_A1 - 11, Y_A1 + 94, 44, 28, BLACK);
+      tft.print('0');
+      tft.setCursor(X_A1 + 11, Y_A1 + 94);
+      tft.print(newA1Hour);
+
+      // Draw one instead of current alarm 1 minute
+      newA1Minute = 1;
+      tft.drawRect(X_A1 + 42, Y_A1 + 94, 44, 28, WHITE);
+      tft.setCursor(X_A1 + 42, Y_A1 + 94);
+      tft.print('0');
+      tft.setCursor(X_A1 + 63, Y_A1 + 94);
+      tft.print(A1Minute);
+      
+      newA1Dy = true;
+      for(int i = 0; i <=6; i++){
+        alarmOneWeek[i] = false;
+        EEPROM.write(eeAddressAlarmOne + i, alarmOneWeek[i]);
+      }
+      
     }
 
     // If we pressing back button
@@ -1841,7 +1928,7 @@ void loop() {
     if (newA1Dy) { // Are we setting up alarm for the days of the week? operate checkmarks. If false than we setting it up for the date in a month
 
       // If we click in the first check Box
-      if ((xpos >= X_A1 - 45) && (xpos <= X_A1 - 34) && (ypos >= Y_A1 + 132) && (ypos <= Y_A1 + 154)) {
+      if ((xpos >= X_A1 - 50) && (xpos <= X_A1 - 34) && (ypos >= Y_A1 + 132) && (ypos <= Y_A1 + 154)) {
         newAlarmOne = true;
         if (alarmOneWeek[0] == false) {
           // Zero touchscreen
