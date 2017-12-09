@@ -1188,7 +1188,7 @@ void draw_Alarm_Screen() {
         tft.print(A1Hour);
       } else tft.print(A1Hour);
       // Draw column
-      draw_Column(X_A1 + 27, Y_A1 + 97, Y_A1 + 118, 1, GREEN);
+      draw_Column(X_A1 + 36, Y_A1 + 97, Y_A1 + 118, 1, GREEN);
       // Draw alarm 1 minutes
       tft.setCursor(X_A1 + 42, Y_A1 + 94);
       if(A1Minute < 10){
@@ -1210,7 +1210,7 @@ void draw_Alarm_Screen() {
         tft.setCursor(X_A1 + 11, Y_A1 + 94);
         tft.print(A1Hour);
       } else tft.print(A1Hour);      // Draw column
-      draw_Column(X_A1 + 37, Y_A1 + 97, Y_A1 + 118, 1, GREEN);
+      draw_Column(X_A1 + 36, Y_A1 + 97, Y_A1 + 118, 1, GREEN);
       // Draw alarm 1 minutes
       tft.setCursor(X_A1 + 42, Y_A1 + 94);
     if(A1Minute < 10){
@@ -1308,7 +1308,7 @@ void draw_Alarm_Screen() {
       // Print alarm 2 Hour
       tft.print(A2Hour);
       // Draw column
-      draw_Column(X_A2 + 37, Y_A2 + 97, Y_A2 + 118, 1, GREEN);
+      draw_Column(X_A2 + 36, Y_A2 + 97, Y_A2 + 118, 1, GREEN);
       // Draw alarm 2 minutes
       tft.setCursor(X_A2 + 42, Y_A2 + 94);
       tft.print(A2Minute);
@@ -1323,7 +1323,7 @@ void draw_Alarm_Screen() {
       // Print Hour
       tft.print(A2Hour);
       // Draw column
-      draw_Column(X_A2 + 37, Y_A2 + 97, Y_A2 + 118, 1, GREEN);
+      draw_Column(X_A2 + 36, Y_A2 + 97, Y_A2 + 118, 1, GREEN);
       // Draw alarm 1 minutes
       tft.setCursor(X_A2 + 42, Y_A2 + 94);
       tft.print(A2Minute);
@@ -1480,7 +1480,7 @@ void setup() {
   // set_Clock(19, 28, 28, true); // Upload Hours( First integer) an 24 hour format even for 12hr mod.
   // Add 28 seconds to upload time.  Last one is h12 state. false for 24 HR
   // set_Date(11, 30, 17, 5); // Last one is the day of the week 1 = Sunday
-  // setAlarm(1, 4, 6, 30, 00, 0x0 , true, true , false);
+    setAlarm(1, 4, 6, 30, 00, 0x0 , true, false , false);
   // setAlarm(2, 5, 12, 28, 30, 0x0 , true, false , false);
   // 1 - Which alarm (1 or 2)
   // 2 - Day of the week or Date
@@ -1709,7 +1709,7 @@ void loop() {
       }
       else { // 24H
         tft.fillRect(X_A1, Y_A1 + 94, 44, 28, BLACK);
-        if (newA1Hour > 1) {
+        if (newA1Hour > 0) {
           newA1Hour--;
           tft.setCursor(X_A1, Y_A1 + 94);
           if (newA1Hour < 10) {
@@ -1718,9 +1718,10 @@ void loop() {
             tft.print(newA1Hour);
           }
           else tft.print(newA1Hour); // Larger than 10
-        } else if (newA1Hour == 1) {
+        }
+        else if (newA1Hour == 0) {
           tft.setCursor(X_A1, Y_A1 + 94);
-          newA1Hour = 24;
+          newA1Hour = 23;
           tft.print(newA1Hour);
         }
       }
@@ -1764,7 +1765,7 @@ void loop() {
       else { // 24 hr format
         tft.fillRect(X_A1, Y_A1 + 94, 44, 28, BLACK);
         tft.setCursor(X_A1, Y_A1 + 94);
-        if (newA1Hour < 24) {
+        if (newA1Hour < 23) {
           newA1Hour++;
           if (newA1Hour < 10) {
             tft.print('0');
@@ -1772,8 +1773,9 @@ void loop() {
             tft.print(newA1Hour);
           }
           else tft.print(newA1Hour); // Larger than 10
-        } else if (newA1Hour == 24) {
-          newA1Hour = 1;
+        } 
+        else if (newA1Hour == 23) {
+          newA1Hour = 0;
           tft.print('0');
           tft.setCursor(X_A1 + 24, Y_A1 + 94);
           tft.print(newA1Hour);
