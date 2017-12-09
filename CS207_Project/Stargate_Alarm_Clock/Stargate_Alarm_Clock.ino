@@ -1458,7 +1458,7 @@ void setup() {
   // set_Clock(19, 28, 28, true); // Upload Hours( First integer) an 24 hour format even for 12hr mod.
   // Add 28 seconds to upload time.  Last one is h12 state. false for 24 HR
   // set_Date(11, 30, 17, 5); // Last one is the day of the week 1 = Sunday
-  // setAlarm(1, 4, 6, 30, 00, 0x0 , false, false , false);
+   setAlarm(1, 4, 6, 30, 00, 0x0 , true, false , false);
   // setAlarm(2, 5, 12, 28, 30, 0x0 , true, false , false);
   // 1 - Which alarm (1 or 2)
   // 2 - Day of the week or Date
@@ -1656,8 +1656,8 @@ void loop() {
       tft.setCursor(X_A1 - 11, Y_A1 + 94);
       tft.setTextColor(BLUE);
       tft.setTextSize(4);
-      tft.fillRect(X_A1, Y_A1 + 94, 44, 28, BLACK);
       if(newA1h12){
+       tft.fillRect(X_A1, Y_A1 + 94, 44, 28, WHITE);
         if(newA1Hour > 1){
           newA1Hour--;
           tft.print(newA1Hour);
@@ -1678,6 +1678,7 @@ void loop() {
       else { // 24H
          if(newA1Hour > 1){
           newA1Hour--;
+          tft.fillRect(X_A1, Y_A1 + 94, 44, 28, BLACK);
           tft.setCursor(X_A1, Y_A1 + 94);
           tft.print(newA1Hour);
         } else if (newA1Hour == 1){
@@ -1695,8 +1696,8 @@ void loop() {
       tft.setCursor(X_A1 - 11, Y_A1 + 94);
       tft.setTextColor(BLUE);
       tft.setTextSize(4);
-      tft.fillRect(X_A1, Y_A1 + 94, 44, 28, BLACK);
       if(newA1h12){
+       tft.fillRect(X_A1, Y_A1 + 94, 44, 28, WHITE);
         if(newA1Hour < 12){
           newA1Hour++;
           tft.print(newA1Hour);
@@ -1715,6 +1716,7 @@ void loop() {
         }
       }
       else {
+         tft.fillRect(X_A1, Y_A1 + 94, 44, 28, BLACK);
          tft.setCursor(X_A1, Y_A1 + 94); 
          if(newA1Hour < 24){
           newA1Hour++;
