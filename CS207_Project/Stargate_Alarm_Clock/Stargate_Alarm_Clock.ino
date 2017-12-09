@@ -1078,7 +1078,8 @@ void drawBackgroundLoop() {
 void drawHomeScreen() {
   zeroAllData();
   DoW = rtc.getDoW(); //  Get new day of the week
-  drawBackgroundLoop();
+  tft.fillScreen(BLACK);                       //////////////////////////////Just Black background////////////////////////
+  // drawBackgroundLoop();                     /////////////////////////////////////// BMP ///////////////////////////////
   drawAlarmStatus();
   drawDayOfTheWeek();
   drawTemp();
@@ -1462,7 +1463,7 @@ void setup() {
   // set_Clock(19, 28, 28, true); // Upload Hours( First integer) an 24 hour format even for 12hr mod.
   // Add 28 seconds to upload time.  Last one is h12 state. false for 24 HR
   // set_Date(11, 30, 17, 5); // Last one is the day of the week 1 = Sunday
-  setAlarm(1, 4, 6, 30, 00, 0x0 , true, false , false);
+  // setAlarm(1, 4, 6, 30, 00, 0x0 , true, true , false);
   // setAlarm(2, 5, 12, 28, 30, 0x0 , true, false , false);
   // 1 - Which alarm (1 or 2)
   // 2 - Day of the week or Date
@@ -1641,6 +1642,7 @@ void loop() {
       ypos = -1;
       newHourSelector = true;
       newMinuteSelector = false;
+      newAlarmOne = true;
     }
 
     // If we click at the Minutess
@@ -1649,8 +1651,8 @@ void loop() {
       ypos = -1;
       newHourSelector = false;
       newMinuteSelector = true;
+      newAlarmOne = true;
     }
-
 
     // If we press Minus button while alarm selector is at Hours
     if ((!newMinuteSelector) && (newHourSelector) && (xpos >= X_A1 + 100) && (xpos <= X_A1 + 140) && (ypos >= Y_A1 + 157) && (ypos <= Y_A1 + 177)) {
@@ -1661,11 +1663,18 @@ void loop() {
       tft.setTextColor(BLUE);
       tft.setTextSize(4);
       if (newA1h12) {
-        tft.fillRect(X_A1, Y_A1 + 94, 44, 28, WHITE);
-        if (newA1Hour > 1) {
+        tft.fillRect(X_A1 - 11, Y_A1 + 94, 44, 28, BLACK);
+        if ((newA1Hour > 1) && (newA1Hour < 10)) {
           newA1Hour--;
+          tft.print('0');
+          tft.setCursor(X_A1 + 11, Y_A1 + 94);
           tft.print(newA1Hour);
-        } else if (newA1Hour == 1) {
+        }
+          else if ((newA1Hour > 1) && (newA1Hour > 9)){
+            newA1Hour--;
+            tft.print(newA1Hour);
+        } 
+        else if (newA1Hour == 1) {
           newA1Hour = 12;
           newA1PM = !newA1PM;
           tft.print(newA1Hour);
@@ -1707,7 +1716,7 @@ void loop() {
       tft.setTextColor(BLUE);
       tft.setTextSize(4);
       if (newA1h12) {
-        tft.fillRect(X_A1, Y_A1 + 94, 44, 28, WHITE);
+        tft.fillRect(X_A1 - 11, Y_A1 + 94, 44, 28, BLACK);
         if (newA1Hour < 12) {
           newA1Hour++;
           tft.print(newA1Hour);
