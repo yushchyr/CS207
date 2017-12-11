@@ -1204,10 +1204,10 @@ void draw_Alarm_Screen() {
       // Draw column
       draw_Column(X_A1 + 36, Y_A1 + 97, Y_A1 + 118, 1, GREEN);
       // Draw alarm 1 minutes
-      tft.setCursor(X_A1 + 42, Y_A1 + 94);
+      tft.setCursor(X_A1 + 43, Y_A1 + 94);
       if (A1Minute < 10) {
         tft.print('0');
-        tft.setCursor(X_A1 + 66, Y_A1 + 94);
+        tft.setCursor(X_A1 + 67, Y_A1 + 94);
         tft.print(A1Minute);
       } else tft.print(A1Minute);
     }
@@ -1226,10 +1226,10 @@ void draw_Alarm_Screen() {
       } else tft.print(A1Hour);      // Draw column
       draw_Column(X_A1 + 36, Y_A1 + 97, Y_A1 + 118, 1, GREEN);
       // Draw alarm 1 minutes
-      tft.setCursor(X_A1 + 42, Y_A1 + 94);
+      tft.setCursor(X_A1 + 43, Y_A1 + 94);
       if (A1Minute < 10) {
         tft.print('0');
-        tft.setCursor(X_A1 + 66, Y_A1 + 94);
+        tft.setCursor(X_A1 + 67, Y_A1 + 94);
         tft.print(A1Minute);
       } else tft.print(A1Minute);
     }
@@ -1332,10 +1332,10 @@ void draw_Alarm_Screen() {
       // Draw column
       draw_Column(X_A2 + 36, Y_A2 + 97, Y_A2 + 118, 1, GREEN);
       // Draw alarm 1 minutes
-      tft.setCursor(X_A2 + 42, Y_A2 + 94);
+      tft.setCursor(X_A2 + 43, Y_A2 + 94);
       if (A2Minute < 10) {
         tft.print('0');
-        tft.setCursor(X_A2 + 66, Y_A2 + 94);
+        tft.setCursor(X_A2 + 67, Y_A2 + 94);
         tft.print(A2Minute);
       } else tft.print(A2Minute);
     }
@@ -1354,10 +1354,10 @@ void draw_Alarm_Screen() {
       } else tft.print(A2Hour);      // Draw column
       draw_Column(X_A2 + 36, Y_A2 + 97, Y_A2 + 118, 1, GREEN);
       // Draw alarm 1 minutes
-      tft.setCursor(X_A2 + 42, Y_A2 + 94);
-      if (A1Minute < 10) {
+      tft.setCursor(X_A2 + 43, Y_A2 + 94);
+      if (A2Minute < 10) {
         tft.print('0');
-        tft.setCursor(X_A2 + 66, Y_A2 + 94);
+        tft.setCursor(X_A2 + 67, Y_A2 + 94);
         tft.print(A2Minute);
       } else tft.print(A2Minute);
     }
@@ -2085,18 +2085,31 @@ void loop() {
       ypos = -1;
       for (int i = rtc.getDoW(); i <= 7; i++) {
         if (alarmOneWeek[i - 1] == true) {
-          newA1Day = i;
-          break;
+          if((A1h12) && (A1PM)) {
+              newA1Day = newA1Day +12 + i;
+              break;
+          } 
+          else {
+              newA1Day = i;
+              break;
+          }
         }
         else if ((i == 7) && (newA1Day == -1)) {
           for (int i = 1; i <= 7; i++) {
             if (alarmOneWeek[i - 1] == true) {
+          if((A1h12) && (A1PM)) {
+              newA1Day = newA1Day +12 + i;
+              break;
+          } 
+          else {
               newA1Day = i;
               break;
-            }
           }
+         }
         }
+       }
       }
+        
 
       if (newAlarmOne) {
 
@@ -2106,7 +2119,7 @@ void loop() {
         tft.setTextSize(2);
         tft.setTextColor(PINK);
         tft.setCursor(X_A1 + 50, Y_A1 + 159);
-       
+
         if (newA1Dy) {
 
           newDoWSelector = false;
@@ -2156,20 +2169,42 @@ void loop() {
       // Draw one instead of current alarm 1 hour
       newA1Hour = 1;
       newAlarmOne = false;
+
+            if(!A1h12) { // If 24 hours format
+
       tft.setCursor(X_A1, Y_A1 + 94);
+            } else tft.setCursor(X_A1 - 11, Y_A1 + 94);
+
       tft.setTextColor(BLUE);
       tft.setTextSize(4);
-      tft.fillRect(X_A1, Y_A1 + 94, 44, 28, BLACK);
+      if(!A1h12) { // If 24 hours format
+         tft.fillRect(X_A1, Y_A1 + 94, 44, 28, BLACK);
+      } else tft.fillRect(X_A1 - 11, Y_A1 + 94, 44, 28, BLACK);
+
       tft.print('0');
+
+            if(!A1h12) { // If 24 hours format
+
       tft.setCursor(X_A1 + 24, Y_A1 + 94);
+            } else tft.setCursor(X_A1 + 13, Y_A1 + 94);
+
       tft.print(newA1Hour);
 
       // Draw one instead of current alarm 1 minute
       newA1Minute = 1;
+
+      if(!A1h12){
       tft.fillRect(X_A1 + 55, Y_A1 + 94, 44, 28, BLACK);
       tft.setCursor(X_A1 + 55, Y_A1 + 94);
+      } else {
+      tft.fillRect(X_A1 + 43, Y_A1 + 94, 44, 28, BLACK);
+      tft.setCursor(X_A1 + 43, Y_A1 + 94);
+      }
       tft.print('0');
+
+      if(!A1h12){
       tft.setCursor(X_A1 + 79, Y_A1 + 94);
+      } else tft.setCursor(X_A1 + 67, Y_A1 + 94);
       tft.print(newA1Minute);
 
       // Turn off existing check marks
@@ -2663,25 +2698,38 @@ void loop() {
       delay(t);
     }
 
-    // If we press set button
+ // If we press set button
     if ((xpos >= X_A2 - 33) && (xpos <= X_A2 + 14) && (ypos >= Y_A2 + 182) && (ypos <= Y_A2 + 207)) {
       // Zero touchscreen
       xpos = -1;
       ypos = -1;
       for (int i = rtc.getDoW(); i <= 7; i++) {
         if (alarmTwoWeek[i - 1] == true) {
-          newA2Day = i;
-          break;
+          if((A2h12) && (A2PM)) {
+              newA2Day = newA2Day +12 + i;
+              break;
+          } 
+          else {
+              newA2Day = i;
+              break;
+          }
         }
         else if ((i == 7) && (newA2Day == -1)) {
           for (int i = 1; i <= 7; i++) {
             if (alarmTwoWeek[i - 1] == true) {
+          if((A2h12) && (A2PM)) {
+              newA2Day = newA2Day +12 + i;
+              break;
+          } 
+          else {
               newA2Day = i;
               break;
-            }
           }
+         }
         }
+       }
       }
+        
 
       if (newAlarmTwo) {
 
@@ -2691,7 +2739,7 @@ void loop() {
         tft.setTextSize(2);
         tft.setTextColor(PINK);
         tft.setCursor(X_A2 + 50, Y_A2 + 159);
-       
+
         if (newA2Dy) {
 
           newDoW2Selector = false;
@@ -2720,7 +2768,7 @@ void loop() {
         }
 
         // Change Status
-        rtc.turnOnAlarm(2); // Turn alarm on
+        rtc.turnOnAlarm(1); // Turn alarm on
         tft.setCursor(X_A2 + 65, Y_A2 + 51);
         tft.fillRect(X_A2 + 65, Y_A2 + 51, 34, 14, BLACK);
         checkAlarmStatus(2);
@@ -2891,20 +2939,34 @@ void loop() {
       // Draw one instead of current alarm 1 hour
       newA2Hour = 1;
       newAlarmTwo = false;
+
+      if(!A2h12){
       tft.setCursor(X_A2, Y_A2 + 94);
+      }  else tft.setCursor(X_A2 - 11, Y_A2 + 94);
       tft.setTextColor(BLUE);
       tft.setTextSize(4);
+      if(!A2h12){
       tft.fillRect(X_A2, Y_A2 + 94, 44, 28, BLACK);
+      } else tft.fillRect(X_A2 - 11, Y_A2 + 94, 44, 28, BLACK);
       tft.print('0');
+      if(!A2h12){
       tft.setCursor(X_A2 + 24, Y_A2 + 94);
+      } else tft.setCursor(X_A2 + 13, Y_A2 + 94);
       tft.print(newA2Hour);
-
+      
       // Draw one instead of current alarm 1 minute
       newA2Minute = 1;
+      if(!A2h12){
       tft.fillRect(X_A2 + 55, Y_A2 + 94, 44, 28, BLACK);
       tft.setCursor(X_A2 + 55, Y_A2 + 94);
+      } else {
+        tft.fillRect(X_A2 + 43, Y_A2 + 94, 44, 28, BLACK);
+        tft.setCursor(X_A2 + 43, Y_A2 + 94);
+      }
       tft.print('0');
+      if(!A2h12) {
       tft.setCursor(X_A2 + 79, Y_A2 + 94);
+      } else tft.setCursor(X_A2 + 67, Y_A2 + 94);
       tft.print(newA2Minute);
 
       // Turn off existing check marks
