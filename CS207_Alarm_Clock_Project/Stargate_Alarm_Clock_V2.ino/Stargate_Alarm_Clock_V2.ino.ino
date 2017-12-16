@@ -23,6 +23,9 @@ MCUFRIEND_kbv tft;       // hard-wired for UNO shields anyway.
 #define F(string_literal) string_literal
 #endif
 
+// TiltSwitch pin
+int tiltSwitch = 11;
+
 // SD Initiation
 #include <BlockDriver.h>
 #include <FreeStack.h>
@@ -172,10 +175,11 @@ int Y_A2 = 80;
 int t = 200;
 
 // MP3 Declaration
-
 SoftwareSerial mp3Serial(13, 12);  // RX, TX
 BY8001 mp3;  // creating an instance of class BY8001 and call it 'mp3'
-
+int mp3Folder = 0; // Folder number
+int mp3Song = 1; // Song Number
+int vol = 15; // Volume integer
 
 // Show Serial info Screen
 void show_Serial(void) {
@@ -1482,6 +1486,7 @@ void draw_Alarm_Screen() {
 
   // Draw current settings date
   tft.drawRect(X_A2 + 39, Y_A2 + 157, 50, 20, WHITE);
+
   // Draw plus and minus sighn
   tft.drawRect(X_A2 + 93, Y_A2 + 182, 60, 20, RED);
   tft.setCursor(X_A2 + 98, Y_A2 + 182);
@@ -1495,47 +1500,59 @@ void draw_Alarm_Screen() {
 
 }
 
-void resetAlarmWhenDoW () {
-  //  Serial.print("Day of the week: ");
-  //  Serial.println(rtc.getDoW());
-  //  Serial.print("Alarm set day: ");
-  //  Serial.println(A1Day);
-  if (rtc.getDoW() != A1Day) {
-    for (int i = rtc.getDoW(); i <= 6; i++) {
-      Serial.print("EEProm alterantion #");
-      Serial.print(i);
-      Serial.print(": ");
-      Serial.print(EEPROM.get(eeAddressAlarmOne + i, alarmOneWeek[i]));
-      if (EEPROM.get(eeAddressAlarmOne + i, alarmOneWeek[i]) == true) {
-        setAlarm(1, i, A1Hour, A1Minute, A1Second, A1Bits , A1Dy, A1h12 , A1PM);
-        // 1 - Which alarm (1 or 2)
-        // 2 - Day of the week or Date
-        // 3 - Hour
-        // 4 - Minute
-        // 5 - Seconds
-        // 6 - 0x0 Alarm byte
-        // 7 - True to set day of the week. False to set alarm for a specific date in a month.
-        // 8 - True for 12Hr format and false for 24 Hr
-        // 9 - True for PM and false for AM
-        Serial.print("Alarm one was rest to the next day");
-        break;
+void resetAlarmWhenDoW () { // Reset alarm for the next selected day in a week
+  if (A1Dy) {
+    //  Serial.print("Day of the week: ");
+    //  Serial.println(rtc.getDoW());
+    //  Serial.print("Alarm set day: ");
+    //  Serial.println(A1Day);
+    if (rtc.getDoW() != A1Day) {
+      for (int i = rtc.getDoW(); i <= 7; i++) {
+        if (i == 8) {
+          i = i - 1;
+        }
+        //      Serial.print("EEProm alterantion #");
+        //      Serial.print(i);
+        //      Serial.print(": ");
+        //      Serial.print(EEPROM.get(eeAddressAlarmOne + i, alarmOneWeek[i]));
+        if (EEPROM.get(eeAddressAlarmOne + i - 1, alarmOneWeek[i - 1]) == true) {
+          setAlarm(1, i, A1Hour, A1Minute, A1Second, A1Bits , A1Dy, A1h12 , A1PM);
+          // 1 - Which alarm (1 or 2)
+          // 2 - Day of the week or Date
+          // 3 - Hour
+          // 4 - Minute
+          // 5 - Seconds
+          // 6 - 0x0 Alarm byte
+          // 7 - True to set day of the week. False to set alarm for a specific date in a month.
+          // 8 - True for 12Hr format and false for 24 Hr
+          // 9 - True for PM and false for AM
+          // Serial.print("Alarm one was rest to the next day");
+          break;
+        }
       }
     }
   }
-  if (A2Day != rtc.getDoW()) {
-    for (int i = rtc.getDoW(); i <= 6; i++) {
-      if (EEPROM.get(eeAddressAlarmTwo + i, alarmTwoWeek[i]) == true) {
-        setAlarm(2, i, A2Hour, A2Minute, A1Second, A2Bits , A2Dy, A2h12 , A2PM); // Ignore seconds
-        // 1 - Which alarm (1 or 2)
-        // 2 - Day of the week or Date
-        // 3 - Hour
-        // 4 - Minute
-        // 5 - Seconds // Ignore for A2. Second alarm does not have seconds.
-        // 6 - 0x0 Alarm byte
-        // 7 - True to set day of the week. False to set alarm for a specific date in a month.
-        // 8 - True for 12Hr format and false for 24 Hr
-        // 9 - True for PM and false for AM
-        // setAlarm(2, 5, 12, 28, 30, 0x0 , true, false , false);
+
+  if (A2Dy) {
+    if (rtc.getDoW() != A2Day ) {
+      for (int i = rtc.getDoW(); i <= 7; i++) {
+        if (i == 8) {
+          i = i - 1;
+        }
+        if (EEPROM.get(eeAddressAlarmTwo + i - 1, alarmTwoWeek[i - 1]) == true) {
+          setAlarm(2, i, A2Hour, A2Minute, A1Second, A2Bits , A2Dy, A2h12 , A2PM); // Ignore seconds
+          // 1 - Which alarm (1 or 2)
+          // 2 - Day of the week or Date
+          // 3 - Hour
+          // 4 - Minute
+          // 5 - Seconds // Ignore for A2. Second alarm does not have seconds.
+          // 6 - 0x0 Alarm byte
+          // 7 - True to set day of the week. False to set alarm for a specific date in a month.
+          // 8 - True for 12Hr format and false for 24 Hr
+          // 9 - True for PM and false for AM
+          // setAlarm(2, 5, 12, 28, 30, 0x0 , true, false , false);
+          break;
+        }
       }
     }
   }
@@ -1598,6 +1615,18 @@ void drawPlay() {
   tft.pushColors(ButtonPlay, 4096, 1);
 }
 
+void activateMusicIfAlarm() {
+  if ((rtc.checkIfAlarm(1)) || (rtc.checkIfAlarm(2))) {
+    mp3.setVolume(30);
+    mp3.play();
+    playBackStatus = 1;
+    if (currentPage == 5) {
+      tft.fillRect(209, 129, 63, 62, BLACK);
+      drawPause(208, 128);
+    }
+  }
+}
+
 void setup() {
 
   //  Begin serial
@@ -1610,16 +1639,21 @@ void setup() {
   mp3Serial.begin(9600);  // BY8001 set to 9600 baud (required)
   mp3.setup(mp3Serial); // tell BY8001 library which serial port to use.
   delay(800);  // allow time for BY8001 cold boot; may adjust depending on flash storage size
+
   // MP3 Settings
-  mp3.setVolume(15);
-  playBackStatus = mp3.getPlaybackStatus();
+  mp3.setVolume(vol); // Default volume
+  playBackStatus = 0; // Default we are not playing any music
+  mp3.stopPlayback(); // Just in case MP3 was playing before reboot. // Because of the use of a secondary power suplly mp3 never resets unless both power cords are out.
 
   // Begin wire library instamnce for Real Time Clock
   Wire.begin();
 
-  //randomSeed(rtc.getSecond() + rtc.getHour(h12, PM) + rtc.getMinute()); // Really random SEED !!! My invention!
-  randomSeed(rtc.getHour(h12, PM) + rtc.getMinute()); // Moderated (Gives you one minute to swap battery's if needed.
-  // randomSeed(rtc.getHour(h12, PM)); // nerrow
+  // Mercury tilt switch
+  pinMode(tiltSwitch, INPUT);
+
+  // randomSeed(rtc.getSecond() + rtc.getHour(h12, PM) + rtc.getMinute()); // Really random SEED !!! My invention!
+  // randomSeed(rtc.getHour(h12, PM) + rtc.getMinute()); // Moderated (Gives you one minute to swap battery's if needed.
+  randomSeed(rtc.getHour(h12, PM)); // nerrow
   // pinMode(A6, INPUT); // SEED trough open pin
   // randomSeed(analogRead(A6)); // Analog SEED
 
@@ -1633,9 +1667,12 @@ void setup() {
   // rtc.getHour(h12, PM); // This line is here to get h12 and PM values
   // set_Clock(19, 28, 28, true); // Upload Hours( First integer) an 24 hour format even for 12hr mod.
   // Add 28 seconds to upload time.  Last one is h12 state. false for 24 HR
-  // set_Date(12, 11, 17, 2); // Last one is the day of the week 1 = Sunday
-  // setAlarm(1, 4, 6, 30, 00, 0x0 , true, true , false);
-  // setAlarm(2, 5, 12, 28, 30, 0x0 , true, true , false);
+  // set_Date(12, 16, 17, 7); // Last one is the day of the week 1 = Sunday
+  // setAlarm(1, 1, 7, 0, 1, 0x0 , false, true , false);
+  // setAlarm(2, 1, 7, 30, 1, 0x0 , false, true , false);
+  rtc.setHour(23);
+  rtc.setMinute(59);
+  rtc.setDoW(7);
   // 1 - Which alarm (1 or 2)
   // 2 - Day of the week or Date
   // 3 - Hour
@@ -1758,7 +1795,7 @@ void loop() {
 
       tft.setTextSize(2);
       tft.setTextColor(PINK);
-      tft.setCursor(X_A1 + 45, Y_A1 + 159);
+      tft.setCursor(X_A1 + 50, Y_A1 + 159);
 
       // Draw current settings Alarm One
       if (!A1Dy) { // Draw selection of the day in a curent month
@@ -1776,6 +1813,7 @@ void loop() {
       }
       else
       {
+        checkDoW();
         newDoWSelector = false;
         switch (newA1Day) {
           case 1:
@@ -1804,7 +1842,7 @@ void loop() {
       }
 
       // Set Cursor
-      tft.setCursor(X_A2 + 45, Y_A2 + 159);
+      tft.setCursor(X_A2 + 50, Y_A2 + 159);
 
       // Draw current settings Alarm Two
       if (!A2Dy) { // Draw selection of the day in a curent month
@@ -1822,6 +1860,7 @@ void loop() {
       }
       else
       {
+        checkDoW2();
         newDoW2Selector = false;
         switch (newA2Day) {
           case 1:
@@ -1930,6 +1969,7 @@ void loop() {
     // Update screen data
     drawTemp();
     drawDate();
+    dow();
     drawDayOfTheWeek();
     drawSmallClock();
     touch_Screen_Read();
@@ -2249,12 +2289,18 @@ void loop() {
       xpos = -1;
       ypos = -1;
       for (int i = rtc.getDoW(); i <= 7; i++) {
+        if (i == 8) {
+          i = i - 1;
+        }
         if (alarmOneWeek[i - 1] == true) {
           newA1Day = i;
           break;
         }
-        else if ((i == 7) && (newA1Day == -1)) {
+        else if (i == 7) {
           for (int i = 1; i <= 7; i++) {
+            if (i == 8) {
+              i = i - 1;
+            }
             if (alarmOneWeek[i - 1] == true) {
               newA1Day = i;
               break;
@@ -2887,12 +2933,18 @@ void loop() {
       xpos = -1;
       ypos = -1;
       for (int i = rtc.getDoW(); i <= 7; i++) {
+        if (i == 8) {
+          i = i - 1;
+        }
         if (alarmTwoWeek[i - 1] == true) {
           newA2Day = i;
           break;
         }
-        else if ((i == 7) && (newA2Day == -1)) {
+        else if (i == 7) {
           for (int i = 1; i <= 7; i++) {
+            if (i == 8) {
+              i = i - 1;
+            }
             if (alarmTwoWeek[i - 1] == true) {
               newA2Day = i;
               break;
@@ -2900,6 +2952,7 @@ void loop() {
           }
         }
       }
+
       if (newAlarmTwo) {
         newDoW2Selector = false;
         switch (newA2Day) {
@@ -3215,9 +3268,67 @@ void loop() {
       drawMediaButton(208, 128);
     }
     else if (playBackStatus == 1) {
-      drawPause(208, 128);
+      drawPause(211, 130);
     }
 
+    // If we pres play or pause
+    if ((xpos > 194) && (xpos < 270) && (ypos > 128) && (ypos < 190)) {
+      xpos = -1;
+      ypos = -1;
+      tft.fillRect(209, 129, 63, 62, BLACK);
+      if (playBackStatus == 0) {
+        mp3.play();
+        playBackStatus = 1;
+      } else if (playBackStatus == 1) {
+        mp3.pause();
+        playBackStatus = 0;
+      }
+      delay(t * 2);
+    }
+
+    // If we press volume Up
+    if ((xpos > 410) && (xpos < 470) && (ypos > 150) && (ypos < 175)) {
+      xpos = -1;
+      ypos = -1;
+      if (vol < 30) {
+        ++vol;
+      }
+      mp3.setVolume(vol);
+    }
+
+    // If we press volume Down
+    if ((xpos > 10) && (xpos < 40) && (ypos > 150) && (ypos < 175)) {
+      xpos = -1;
+      ypos = -1;
+      if (vol > 0) {
+        --vol;
+      }
+      mp3.setVolume(vol);
+    }
+
+    // If we press Previus button
+    if ((xpos > 70) && (xpos < 150) && (ypos > 150) && (ypos < 175)) {
+      mp3.previousTrack();
+      xpos = -1;
+      ypos = -1;
+      tft.fillRect(209, 129, 63, 62, BLACK);
+      drawPause(211, 130);
+      playBackStatus = 1;
+      delay(t * 2);
+    }
+
+    // If we press Next button
+    if ((xpos > 320) && (xpos < 390) && (ypos > 150) && (ypos < 175)) {
+      mp3.nextTrack();
+      xpos = -1;
+      ypos = -1;
+      tft.fillRect(209, 129, 63, 62, BLACK);
+      drawPause(211, 130);
+      playBackStatus = 1;
+      delay(t * 2);
+    }
+
+    // If we press back button
     if ((ypos > tft.height() - 40) && (xpos < 40)) { // If we pressing back button
       xpos = -1;
       ypos = -1;
@@ -3243,6 +3354,22 @@ void loop() {
       currentPage = 2;
     }
   } // End of the blutotth screen
+
+  // If Tilt switch lights up Red it has value of 0
+  if (digitalRead(tiltSwitch) == NULL) {
+    mp3.pause();
+    playBackStatus = 0;
+    if (currentPage == 5) {
+      tft.fillRect(209, 129, 63, 62, BLACK);
+      drawMediaButton(208, 128);
+    }
+  }
+
+  // Set Alarm for the next day in current week
+  resetAlarmWhenDoW();
+
+  // Play Alarm
+  activateMusicIfAlarm();
 
 } // End of the void loop
 
