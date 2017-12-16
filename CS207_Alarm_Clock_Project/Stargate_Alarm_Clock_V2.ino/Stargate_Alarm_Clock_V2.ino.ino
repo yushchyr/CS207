@@ -1131,7 +1131,7 @@ void draw_Media_Screen() {
 void drawPreviousButton() {
   extern const uint8_t PreviousButton[0x9C4];
   int  pos_XPB = 95;
-  int  pos_YPB = 143;
+  int  pos_YPB = 135;
   tft.setAddrWindow(pos_XPB, pos_YPB, pos_XPB + 49, pos_YPB + 50);
   tft.pushColors(PreviousButton, 2496, 1);
 }
@@ -1139,7 +1139,7 @@ void drawPreviousButton() {
 void drawNextButton() {
   extern const uint8_t NextButton[0x9C4];
   int  pos_XNB = 335;
-  int  pos_YNB = 143;
+  int  pos_YNB = 135;
   tft.setAddrWindow(pos_XNB, pos_YNB, pos_XNB + 49, pos_YNB + 50);
   tft.pushColors(NextButton, 2496, 1);
 
