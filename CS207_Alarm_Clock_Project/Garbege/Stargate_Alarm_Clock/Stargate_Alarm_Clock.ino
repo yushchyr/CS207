@@ -57,11 +57,11 @@ uint8_t XP = 6;   // can be a digital pin
 uint8_t SwapXY = 0;
 
 // TFT Shield corner touch points values
-uint16_t TS_LEFT = 920;
-uint16_t TS_RT  = 150;
-uint16_t TS_TOP = 940;
+uint16_t TS_LEFT = 961;
+uint16_t TS_RT  = 134;
+uint16_t TS_TOP = 917;
 uint16_t TS_BOT = 120;
-volatile uint16_t xpos = 0, ypos = 0;  //screen coordinates
+uint16_t xpos = 0, ypos = 0;  //screen coordinates
 char *name = "Unknown controller";
 // For better pressure precision, we need to know the resistance
 // between X+ and X- Use any multimeter to read it
@@ -303,11 +303,11 @@ void drawCheckMarkWhite(int x, int y) {
 }
 
 void drawRadioButton() {
-  extern const uint8_t RadioButton[13200];
+  extern const uint8_t RadioButton[4225];
   pos_X = 180;
   pos_Y = 105;
-  tft.setAddrWindow(pos_X, pos_Y, pos_X + 119, pos_Y + 110);
-  tft.pushColors(RadioButton, 13200, 1);
+  tft.setAddrWindow(pos_X, pos_Y, pos_X + 64, pos_Y + 65);
+  tft.pushColors(RadioButton, 4225, 1);
 }
 
 void zeroAllData() {

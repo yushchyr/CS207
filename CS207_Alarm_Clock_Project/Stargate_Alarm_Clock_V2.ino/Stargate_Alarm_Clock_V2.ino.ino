@@ -13,6 +13,7 @@
 
 
 // TFT Initiatioon
+#include <SoftwareSerial.h>
 #include <Adafruit_GFX.h>    // Core graphics library
 #include <MCUFRIEND_kbv.h>
 MCUFRIEND_kbv tft;       // hard-wired for UNO shields anyway.
@@ -57,9 +58,9 @@ uint8_t XP = 6;   // can be a digital pin
 uint8_t SwapXY = 0;
 
 // TFT Shield corner touch points values
-uint16_t TS_LEFT = 920;
-uint16_t TS_RT  = 150;
-uint16_t TS_TOP = 940;
+uint16_t TS_LEFT = 961;
+uint16_t TS_RT  = 134;
+uint16_t TS_TOP = 917;
 uint16_t TS_BOT = 120;
 volatile uint16_t xpos = 0, ypos = 0;  //screen coordinates
 char *name = "Unknown controller";
@@ -85,7 +86,7 @@ int16_t BOXSIZE;
 int16_t PENRADIUS = 3;
 uint16_t identifier, oldcolor, currentcolor;
 uint8_t Orientation = 1;    // Landscape orientaion is default
-char currentPage, playStatus;
+char currentPage, playBackStatus;
 String alarmString = "";
 
 
@@ -139,7 +140,7 @@ bool newHourSelector = false;
 bool newMinuteSelector = false;
 bool newDoWSelector = false;
 
-// AAlarm Two
+// Alarm Two
 byte A2Day, A2Hour, A2Minute, A2Bits;
 bool A2Dy, A2h12, A2PM;
 bool alarmTwoWeek[7] = {false, false, false, false, false, false, false};
@@ -169,6 +170,12 @@ int Y_A2 = 80;
 
 // Delay time for checkmarks
 int t = 200;
+
+// MP3 Declaration
+
+SoftwareSerial mp3Serial(13, 12);  // RX, TX
+BY8001 mp3;  // creating an instance of class BY8001 and call it 'mp3'
+
 
 // Show Serial info Screen
 void show_Serial(void) {
@@ -288,12 +295,14 @@ void drawEraseButton() {
   tft.pushColors(EraseButton, 1024, 1);
 }
 
+// Draw green checkmark
 void drawCheckMark(int x, int y) {
   extern const uint8_t CheckMark[256];
   tft.setAddrWindow(x, y, x + 15, y + 16);
   tft.pushColors(CheckMark, 256, 1);
 }
 
+// Draw red checkmark
 void drawCheckMarkRed(int x, int y) {
   extern const uint8_t CheckMarkRed[256];
   tft.setAddrWindow(x, y, x + 15, y + 16);
@@ -306,12 +315,10 @@ void drawCheckMarkWhite(int x, int y) {
   tft.pushColors(CheckMarkWhite, 256, 1);
 }
 
-void drawRadioButton() {
-  extern const uint8_t RadioButton[13200];
-  pos_X = 180;
-  pos_Y = 105;
-  tft.setAddrWindow(pos_X, pos_Y, pos_X + 119, pos_Y + 110);
-  tft.pushColors(RadioButton, 13200, 1);
+void drawAlarmButton(int pos_X, int pos_Y) {
+  extern const uint8_t AlarmButton[0x1040];
+  tft.setAddrWindow(pos_X, pos_Y, pos_X + 64, pos_Y + 65);
+  tft.pushColors(AlarmButton, 4160, 1);
 }
 
 void zeroAllData() {
@@ -694,16 +701,10 @@ void drawSmallClock() {
   }
 }
 
-void drawAlarmButton(int pos_X, int pos_Y) {
-  extern const uint8_t AlarmButton[0x1040];
-  tft.setAddrWindow(pos_X, pos_Y, pos_X + 64, pos_Y + 65);
-  tft.pushColors(AlarmButton, 4160, 1);
-}
-
-void drawMediaButton() {
+void drawMediaButton(int X, int Y) {
   extern const uint8_t MusicPlayerButton[0x1040];
-  pos_X = 50;
-  pos_Y = 170;
+  pos_X = X;
+  pos_Y = Y;
   tft.setAddrWindow(pos_X, pos_Y, pos_X + 64, pos_Y + 65);
   tft.pushColors(MusicPlayerButton, 4160, 1);
 }
@@ -1091,15 +1092,86 @@ void drawHomeScreen() {
   drawDate();
   drawHomeClock();
   drawAlarmButton(365, 170);
-  drawMediaButton();
+  drawMediaButton(50, 170);
   drawPaintButton();
 }
 
+void drawRadioButton() {
+  extern const uint8_t RadioButton[4225];
+  int pos_XRB = 207;
+  int pos_YRB = 140;
+  tft.setAddrWindow(pos_XRB, pos_YRB, pos_XRB + 64, pos_YRB + 65);
+  tft.pushColors(RadioButton, 4225, 1);
+}
+
+void drawBluetoothButton() {
+  extern const uint8_t BluetoothButton[825];
+  int pos_XBB = 345;
+  int pos_YBB = 160;
+  tft.setAddrWindow(pos_XBB, pos_YBB, pos_XBB + 24, pos_YBB + 33);
+  tft.pushColors(BluetoothButton, 816, 1);
+}
+
+void drawPause(int X, int Y) {
+  extern const uint8_t ButtonPause[3600];
+  int  pos_XPAUSE = X;
+  int  pos_YPAUSE = Y;
+  tft.setAddrWindow(pos_XPAUSE, pos_YPAUSE, pos_XPAUSE + 59, pos_YPAUSE + 60);
+  tft.pushColors(ButtonPause, 3600, 1);
+}
+
 void draw_Media_Screen() {
+  tft.fillScreen(BLACK);
   drawRadioButton();
+  drawMediaButton(87, 140);
+  drawBluetoothButton();
+  drawBackButton();
+}
+
+void drawPreviousButton() {
+  extern const uint8_t PreviousButton[0x9C4];
+  int  pos_XPB = 95;
+  int  pos_YPB = 143;
+  tft.setAddrWindow(pos_XPB, pos_YPB, pos_XPB + 49, pos_YPB + 50);
+  tft.pushColors(PreviousButton, 2496, 1);
+}
+
+void drawNextButton() {
+  extern const uint8_t NextButton[0x9C4];
+  int  pos_XNB = 335;
+  int  pos_YNB = 143;
+  tft.setAddrWindow(pos_XNB, pos_YNB, pos_XNB + 49, pos_YNB + 50);
+  tft.pushColors(NextButton, 2496, 1);
+
+}
+
+void drawVolumeDown() {
+  extern const uint8_t VolumeDown[0x170];
+  int  pos_XVD = 25;
+  int  pos_YVD = 148;
+  tft.setAddrWindow(pos_XVD, pos_YVD, pos_XVD + 15, pos_YVD + 23);
+  tft.pushColors(VolumeDown, 368, 1);
+}
+
+void drawVolumeUp() {
+  extern const uint8_t VolumeUp[0x3B8];
+  int  pos_XVU = tft.width() - 58;
+  int  pos_YVU = 148;
+  tft.setAddrWindow(pos_XVU, pos_YVU, pos_XVU + 33, pos_YVU + 28);
+  tft.pushColors(VolumeUp, 944, 1);
+}
+
+void mp3_Player_Screen() {
+  tft.fillScreen(BLACK);
+  drawPreviousButton();
+  drawNextButton();
+  drawBackButton();
+  drawVolumeDown();
+  drawVolumeUp();
 }
 
 void draw_Radio_Screen() {
+  tft.fillScreen(BLACK);
   drawBackButton();
 }
 
@@ -1518,6 +1590,14 @@ void checkDoW2() {
   }
 }
 
+void drawPlay() {
+  extern const uint8_t ButtonPlay[4096];
+  int  pos_XPLAY = 241;
+  int  pos_YPLAY = 177;
+  tft.setAddrWindow(pos_XPLAY, pos_YPLAY, pos_XPLAY + 63, pos_YPLAY + 64);
+  tft.pushColors(ButtonPlay, 4096, 1);
+}
+
 void setup() {
 
   //  Begin serial
@@ -1525,6 +1605,14 @@ void setup() {
   while (!Serial) {
     ; // wait for serial port to connect. Needed for native USB port only
   }
+
+  // MP3 Setup
+  mp3Serial.begin(9600);  // BY8001 set to 9600 baud (required)
+  mp3.setup(mp3Serial); // tell BY8001 library which serial port to use.
+  delay(800);  // allow time for BY8001 cold boot; may adjust depending on flash storage size
+  // MP3 Settings
+  mp3.setVolume(15);
+  playBackStatus = mp3.getPlaybackStatus();
 
   // Begin wire library instamnce for Real Time Clock
   Wire.begin();
@@ -1564,6 +1652,9 @@ void setup() {
   //      EEPROM.write(eeAddressAlarmOne + i, alarmOneWeek[i]);
   //      Serial.println(EEPROM.get(eeAddressAlarmOne + i, alarmOneWeek[i]));
   //    }
+  // delay(800);
+  // mp3.playTrackFromFolder(00, 001); // Play music folder 0 file 1
+
 
   // Get backround from a SD card
   bool good = SD.begin(SD_CS);
@@ -1667,7 +1758,7 @@ void loop() {
 
       tft.setTextSize(2);
       tft.setTextColor(PINK);
-      tft.setCursor(X_A1 + 50, Y_A1 + 159);
+      tft.setCursor(X_A1 + 45, Y_A1 + 159);
 
       // Draw current settings Alarm One
       if (!A1Dy) { // Draw selection of the day in a curent month
@@ -1686,12 +1777,34 @@ void loop() {
       else
       {
         newDoWSelector = false;
-        checkDoW();
-        tft.print(newA1Day);
+        switch (newA1Day) {
+          case 1:
+            day_Of_The_Week = "Sun";
+            break;
+          case 2:
+            day_Of_The_Week = "Mon";
+            break;
+          case 3:
+            day_Of_The_Week = "Tue";
+            break;
+          case 4:
+            day_Of_The_Week = "Wed";
+            break;
+          case 5:
+            day_Of_The_Week = "Thu";
+            break;
+          case 6:
+            day_Of_The_Week = "Fri";
+            break;
+          case 7:
+            day_Of_The_Week = "Sat";
+            break;
+        }
+        tft.print(day_Of_The_Week);
       }
 
       // Set Cursor
-      tft.setCursor(X_A2 + 50, Y_A2 + 159);
+      tft.setCursor(X_A2 + 45, Y_A2 + 159);
 
       // Draw current settings Alarm Two
       if (!A2Dy) { // Draw selection of the day in a curent month
@@ -1710,8 +1823,30 @@ void loop() {
       else
       {
         newDoW2Selector = false;
-        checkDoW2();
-        tft.print(newA2Day);
+        switch (newA2Day) {
+          case 1:
+            day_Of_The_Week = "Sun";
+            break;
+          case 2:
+            day_Of_The_Week = "Mon";
+            break;
+          case 3:
+            day_Of_The_Week = "Tue";
+            break;
+          case 4:
+            day_Of_The_Week = "Wed";
+            break;
+          case 5:
+            day_Of_The_Week = "Thu";
+            break;
+          case 6:
+            day_Of_The_Week = "Fri";
+            break;
+          case 7:
+            day_Of_The_Week = "Sat";
+            break;
+        }
+        tft.print(day_Of_The_Week);
       }
 
 
@@ -1736,13 +1871,14 @@ void loop() {
   if (currentPage == 2) {
     drawTemp();
     drawDate();
-    drawBackButton();
     drawDayOfTheWeek();
     drawSmallClock();
     touch_Screen_Read();
 
     // If we press radio button
-    if ((xpos >= 180) && (xpos <= 300) && (ypos >= 105) && (ypos <= 215)) {
+    if ((xpos >= 190) && (xpos <= 260) && (ypos >= 145) && (ypos <= 215)) {
+      xpos = -1;
+      ypos = -1;
       // Zero all data is used in a next screen
       zeroAllData();
       // Set sceren black
@@ -1751,12 +1887,42 @@ void loop() {
       draw_Radio_Screen();
       currentPage = 4;
     }
+
     // If we press back button
     if ((ypos > tft.height() - 40) && (xpos < 40)) {
       zeroAllData();
       drawHomeScreen();
       currentPage = 0;
     }
+
+    // If we press MP3 button
+    if ((xpos >= 65) && (xpos <= 135) && (ypos >= 140) && (ypos <= 215)) {
+      xpos = -1;
+      ypos = -1;
+      // Zero all data is used in a next screen
+      zeroAllData();
+      // Set sceren black
+      tft.fillScreen(BLACK); // Sets the background color of the area where the text will be printed to black
+      drawBackButton();
+      // Draw Mp3 screen
+      mp3_Player_Screen();
+      currentPage = 5;
+    }
+
+    // If we press Bluetooth button
+    if ((xpos >= 320) && (xpos <= 370) && (ypos >= 140) && (ypos <= 215)) {
+      xpos = -1;
+      ypos = -1;
+      // Zero all data is used in a next screen
+      zeroAllData();
+      // Set sceren black
+      tft.fillScreen(BLACK); // Sets the background color of the area where the text will be printed to black
+      drawBackButton();
+      // Draw Blurtooth screen
+      //mp3_Player_Screen();
+      currentPage = 6;
+    }
+
   }
 
   // Alarm screen
@@ -2037,12 +2203,12 @@ void loop() {
       newAlarmOne = true;
       newHourSelector = false;
       newMinuteSelector = false;
+      tft.fillRect(X_A1 + 45, Y_A1 + 158, 40, 18, BLACK); // Draw a balck square over the last known value
 
       if (!newA1Dy) { // Draw selection of the day in a curent month
 
         // Turn on DoW selector
         newDoWSelector = true;
-        tft.fillRect(X_A1 + 50, Y_A1 + 158, 22, 18, BLACK); // Draw a balck square over the last known value
         drawCheckMarkWhite(X_A1 + 13, Y_A1 + 159);
         tft.setTextColor(PINK);
         tft.setCursor(X_A1 + 50, Y_A1 + 159);
@@ -2073,7 +2239,6 @@ void loop() {
 
         // Draw black box over both areas and reset counters
         tft.fillRect(X_A1 + 12, Y_A1 + 158, 18, 18, BLACK);
-        tft.fillRect(X_A1 + 50, Y_A1 + 158, 22, 18, BLACK);
       }
       delay(t);
     }
@@ -2085,18 +2250,18 @@ void loop() {
       ypos = -1;
       for (int i = rtc.getDoW(); i <= 7; i++) {
         if (alarmOneWeek[i - 1] == true) {
-            newA1Day = i;
-            break;
-          }
+          newA1Day = i;
+          break;
+        }
         else if ((i == 7) && (newA1Day == -1)) {
           for (int i = 1; i <= 7; i++) {
             if (alarmOneWeek[i - 1] == true) {
-                newA1Day = i;
-                break;
-              }
+              newA1Day = i;
+              break;
             }
           }
         }
+      }
 
 
       if (newAlarmOne) {
@@ -2111,11 +2276,39 @@ void loop() {
         if (newA1Dy) {
 
           newDoWSelector = false;
-          checkDoW();
-          tft.print(newA1Day);
 
+          switch (newA1Day) {
+            case 1:
+              day_Of_The_Week = "Sunday";
+              break;
+            case 2:
+              day_Of_The_Week = "Monday";
+              break;
+            case 3:
+              day_Of_The_Week = "Tuesday";
+              break;
+            case 4:
+              day_Of_The_Week = "Wednesday";
+              break;
+            case 5:
+              day_Of_The_Week = "Thursday";
+              break;
+            case 6:
+              day_Of_The_Week = "Friday";
+              break;
+            case 7:
+              day_Of_The_Week = "Saturday";
+              break;
+          }
+          tft.fillRect(X_A1 + 42, Y_A1 + 159, 45, 16, BLACK);
+          tft.setCursor(X_A1 + 45, Y_A1 + 159);
+          String newA1SDay = day_Of_The_Week.substring(0, 3);
+          tft.print(newA1SDay);
+
+          // Restore position
+          tft.setCursor(X_A1 + 50, Y_A1 + 159);
           // set Alarm
-          if((A1h12) && (A1PM)) newA1Hour = newA1Hour + 12;
+          if ((A1h12) && (A1PM)) newA1Hour = newA1Hour + 12;
           setAlarm(1, newA1Day, newA1Hour, newA1Minute, A1Second, A1Bits, newA1Dy, newA1h12 , newA1PM);
         }
         else {
@@ -2133,7 +2326,7 @@ void loop() {
           }
 
           // Set alarm
-          if((A1h12) && (A1PM)) newA1Hour = newA1Hour + 12;
+          if ((A1h12) && (A1PM)) newA1Hour = newA1Hour + 12;
           setAlarm(1, newA1Date, newA1Hour, newA1Minute, A1Second, A1Bits, newA1Dy, newA1h12 , newA1PM);
         }
 
@@ -2208,7 +2401,7 @@ void loop() {
 
       // Draw black box over both areas and reset counters
       tft.fillRect(X_A1 + 12, Y_A1 + 158, 18, 18, BLACK);
-      tft.fillRect(X_A1 + 50, Y_A1 + 158, 22, 18, BLACK);
+      tft.fillRect(X_A1 + 45, Y_A1 + 158, 42, 18, BLACK);
       newA1Date = 1;
       newA1Day = 1;
 
@@ -2647,13 +2840,14 @@ void loop() {
       newAlarmTwo = true;
       newHour2Selector = false;
       newMinute2Selector = false;
+      tft.fillRect(X_A2 + 45, Y_A2 + 158, 40, 18, BLACK); // Draw a balck square over the last known value
+
 
       if (!newA2Dy) { // Draw selection of the day in a curent month
 
         // Turn on DoW selector
         newDoW2Selector = true;
 
-        tft.fillRect(X_A2 + 50, Y_A2 + 158, 22, 18, BLACK);
         drawCheckMarkWhite(X_A2 + 13, Y_A2 + 159);
         tft.setTextColor(PINK);
         tft.setCursor(X_A2 + 50, Y_A2 + 159);
@@ -2683,7 +2877,6 @@ void loop() {
 
         // Draw black box over both areas and reset counters
         tft.fillRect(X_A2 + 12, Y_A2 + 158, 18, 18, BLACK);
-        tft.fillRect(X_A2 + 50, Y_A2 + 158, 22, 18, BLACK);
       }
       delay(t);
     }
@@ -2695,41 +2888,60 @@ void loop() {
       ypos = -1;
       for (int i = rtc.getDoW(); i <= 7; i++) {
         if (alarmTwoWeek[i - 1] == true) {
-            newA2Day = i;
-            break;
-          }
-          else if ((i == 7) && (newA2Day == -1)) {
+          newA2Day = i;
+          break;
+        }
+        else if ((i == 7) && (newA2Day == -1)) {
           for (int i = 1; i <= 7; i++) {
             if (alarmTwoWeek[i - 1] == true) {
-                newA2Day = i;
-                break;
-              }
+              newA2Day = i;
+              break;
             }
           }
         }
-
-
-
+      }
       if (newAlarmTwo) {
-         newDoW2Selector = false;
+        newDoW2Selector = false;
+        switch (newA2Day) {
+          case 1:
+            day_Of_The_Week = "Sunday";
+            break;
+          case 2:
+            day_Of_The_Week = "Monday";
+            break;
+          case 3:
+            day_Of_The_Week = "Tuesday";
+            break;
+          case 4:
+            day_Of_The_Week = "Wednesday";
+            break;
+          case 5:
+            day_Of_The_Week = "Thursday";
+            break;
+          case 6:
+            day_Of_The_Week = "Friday";
+            break;
+          case 7:
+            day_Of_The_Week = "Saturday";
+            break;
+        }
+        tft.fillRect(X_A2 + 42, Y_A2 + 159, 45, 16, BLACK);
+        tft.setCursor(X_A2 + 45, Y_A2 + 159);
 
-        // Fill black
-        tft.fillRect(X_A2 + 50, Y_A2 + 158, 22, 18, BLACK);
         // Set Cursor, color and size
         tft.setTextSize(2);
         tft.setTextColor(PINK);
-        tft.setCursor(X_A2 + 50, Y_A2 + 159);
 
         if (newA2Dy) {
-          checkDoW2();
-          tft.print(newA2Day);
-
+          String newA2SDay = day_Of_The_Week.substring(0, 3);
+          tft.print(newA2SDay);
           // set Alarm
-          if((A2h12) && (A2PM)) newA2Hour = newA2Hour + 12;
+          if ((A2h12) && (A2PM)) newA2Hour = newA2Hour + 12;
           setAlarm(2, newA2Day, newA2Hour, newA2Minute, A1Second, A2Bits, newA2Dy, newA2h12 , newA2PM);
         }
         else {
-
+          // Restore position
+          tft.setCursor(X_A2 + 50, Y_A2 + 159);
           drawCheckMarkWhite(X_A2 + 13, Y_A2 + 159);
           newDoW2Selector = true;
 
@@ -2743,7 +2955,7 @@ void loop() {
           }
 
           // Set alarm
-          if((A2h12) && (A2PM)) newA2Hour = newA2Hour + 12;
+          if ((A2h12) && (A2PM)) newA2Hour = newA2Hour + 12;
           setAlarm(2, newA2Date, newA2Hour, newA2Minute, A1Second, A2Bits, newA2Dy, newA2h12 , newA2PM);
         }
 
@@ -2960,7 +3172,7 @@ void loop() {
 
       // Draw black box over both areas and reset counters
       tft.fillRect(X_A2 + 12, Y_A2 + 158, 18, 18, BLACK);
-      tft.fillRect(X_A2 + 50, Y_A2 + 158, 22, 18, BLACK);
+      tft.fillRect(X_A2 + 45, Y_A2 + 158, 34, 18, BLACK);
       newA2Date = 1;
       newA2Day = 1;
 
@@ -2991,6 +3203,46 @@ void loop() {
     }
 
   } // End of a Radio screen
+
+  // MP3 Player sscreen
+  if (currentPage == 5) {
+    drawTemp();
+    drawDate();
+    drawDayOfTheWeek();
+    drawSmallClock();
+    touch_Screen_Read();
+    if (playBackStatus == 0) {
+      drawMediaButton(208, 128);
+    }
+    else if (playBackStatus == 1) {
+      drawPause(208, 128);
+    }
+
+    if ((ypos > tft.height() - 40) && (xpos < 40)) { // If we pressing back button
+      xpos = -1;
+      ypos = -1;
+      zeroAllData();
+      draw_Media_Screen();
+      currentPage = 2;
+    }
+
+  } // End of MP3 loop
+
+  // Bluetooth Screen
+  if (currentPage == 6) {
+    drawTemp();
+    drawDate();
+    drawDayOfTheWeek();
+    drawSmallClock();
+    touch_Screen_Read();
+    if ((ypos > tft.height() - 40) && (xpos < 40)) { // If we pressing back button
+      xpos = -1;
+      ypos = -1;
+      zeroAllData();
+      draw_Media_Screen();
+      currentPage = 2;
+    }
+  } // End of the blutotth screen
 
 } // End of the void loop
 
