@@ -47,6 +47,7 @@ SdFat SD; // Bit-Bang on the Shield pins
 //char namebuf[32] = "/";   //BMP files in root directory
 char namebuf[32] = "/BACKGR~1/";  //BMP directory e.g. files in /bitmaps/*.bmp
 
+// Part of the BMP drawing process
 File root;
 int pathlen;
 #define BMPIMAGEOFFSET 54
@@ -93,7 +94,7 @@ char currentPage, playBackStatus;
 String alarmString = "";
 
 
-// Assign human-readable names to some common 16-bit color values:
+// Assign human-readable names to some common 16-bit color values: I add more colors to the paint setup. You can choose any of this.
 #define BLACK           0x0000      /*   0,   0,   0 */
 #define Navy            0x000F      /*   0,   0, 128 */
 #define DarkGreen       0x03E0      /*   0, 128,   0 */
@@ -139,7 +140,7 @@ int newA1Minute = -1;
 bool newA1Dy = -1;
 int newA1Date = -1;
 bool newA1h12, newA1PM;
-bool newHourSelector = false;
+bool newHourSelector = false; // Selector switches to control alarm screen
 bool newMinuteSelector = false;
 bool newDoWSelector = false;
 
@@ -154,7 +155,7 @@ int newA2Minute = -1;
 bool newA2Dy = -1;
 int newA2Date = -1;
 int newA2Day = -1;
-bool newHour2Selector = false;
+bool newHour2Selector = false; // Selector switches to control alarm screen
 bool newMinute2Selector = false;
 bool newDoW2Selector = false;
 
@@ -313,18 +314,21 @@ void drawCheckMarkRed(int x, int y) {
   tft.pushColors(CheckMarkRed, 256, 1);
 }
 
+// Draw white checkmark
 void drawCheckMarkWhite(int x, int y) {
   extern const uint8_t CheckMarkWhite[256];
   tft.setAddrWindow(x, y, x + 15, y + 16);
   tft.pushColors(CheckMarkWhite, 256, 1);
 }
 
+// Draw Alarm button X and Y is a position of a button
 void drawAlarmButton(int pos_X, int pos_Y) {
   extern const uint8_t AlarmButton[0x1040];
   tft.setAddrWindow(pos_X, pos_Y, pos_X + 64, pos_Y + 65);
   tft.pushColors(AlarmButton, 4160, 1);
 }
 
+// Zero all data to load a new screen
 void zeroAllData() {
   xpos = -1;
   ypos = -1;
@@ -337,6 +341,7 @@ void zeroAllData() {
   PM = -1;
 }
 
+// Setup loop for pait. Drawing colors and buttons
 void paint_Setup() {
   //show_tft();
   BOXSIZE = tft.width() / 8;
@@ -355,6 +360,7 @@ void paint_Setup() {
   drawEraseButton();
 }
 
+// Paint loop to be called from the main loop when we press on the screen.
 void paint_Loop() {
   touch_Screen_Read();
   // are we in top color box area ?
@@ -424,6 +430,7 @@ void paint_Loop() {
   }
 }
 
+// Setup of the MCuFriend touchscreen
 void TFT_Setup() {
 
   uint16_t tmp;
@@ -453,6 +460,7 @@ void TFT_Setup() {
   tft.setRotation(Orientation);
 }
 
+// Setting time. To be used once doring setup of rtc. Than comment out this function call in a setup.
 void set_Clock(byte h, byte m, byte s, bool hm) {
 
   if ((h != "") && (m != "") && (s != "")) {
@@ -463,6 +471,7 @@ void set_Clock(byte h, byte m, byte s, bool hm) {
   }
 }
 
+// Set date. Same logic.
 void set_Date(int mm, int dd, int yr, int doW) {
   if ((mm != "") && (dd != "") && (yr != "") && (doW != "")) {
     rtc.setMonth(mm);
@@ -473,6 +482,7 @@ void set_Date(int mm, int dd, int yr, int doW) {
 
 }
 
+// Drawing a collum X and two Y to draw a collom of any r size and c color
 void draw_Column(int x, int y1, int y2, int r, int c) {
   // Draw a top dot divider
   tft.fillCircle(x, y1, r, c);
@@ -480,6 +490,7 @@ void draw_Column(int x, int y1, int y2, int r, int c) {
   tft.fillCircle(x, y2, r, c);
 }
 
+// Drawing a big clock
 void drawHomeClock() {
   // Clock size and color
   tft.setTextSize(10); // Letter size = 65
@@ -591,6 +602,7 @@ void drawHomeClock() {
   }
 }
 
+// Drwaing a small clock
 void drawSmallClock() {
 
   // Setting up coordinates for a small clock begginning
@@ -705,14 +717,16 @@ void drawSmallClock() {
   }
 }
 
+// Drawing media/Play button. We are short on SRAM memory because of all of the Icons in PROGMEM
 void drawMediaButton(int X, int Y) {
-  extern const uint8_t MusicPlayerButton[0x1040];
-  pos_X = X;
+  extern const uint8_t MusicPlayerButton[0x1040]; // Declaring external arraey
+  pos_X = X; // Set position
   pos_Y = Y;
-  tft.setAddrWindow(pos_X, pos_Y, pos_X + 64, pos_Y + 65);
+  tft.setAddrWindow(pos_X, pos_Y, pos_X + 64, pos_Y + 65); // Draw Object window
   tft.pushColors(MusicPlayerButton, 4160, 1);
 }
 
+// Draw Paint button
 void drawPaintButton() {
   extern const uint8_t PaintButton[4225];
   pos_X = 207;
@@ -744,6 +758,7 @@ void drawTemp() {
   }
 }
 
+// Draw Temp
 void drawDate() {
   // Print date
   if (currentDate != rtc.getDate()) {
@@ -783,6 +798,7 @@ void drawDate() {
   }
 }
 
+// Get Day of the week from RTC
 void dow() {
   DoW = rtc.getDoW(); //  Get new day of the week
   // Day of the week switch case
@@ -811,6 +827,7 @@ void dow() {
   }
 }
 
+// Drow new day of the week if any change accuers doring the cycle
 void drawDayOfTheWeek() {
   // Print day of the week
   if (oldDoW != DoW) {
@@ -857,6 +874,7 @@ void drawDayOfTheWeek() {
   }
 }
 
+// Draw alarm Status.  Is unused function. Im Storing my name here. But in a future I will add a string from the new alarm data set.
 void drawAlarmStatus() {
   // Check if alarm is ON or OFF
   if (alarmString == "") {
@@ -875,18 +893,21 @@ void drawAlarmStatus() {
   }
 }
 
+// File from SD tough SDfat 16-bit file sysyetm
 uint16_t read16(File& f) {
   uint16_t result;         // read little-endian
   f.read(&result, sizeof(result));
   return result;
 }
 
+// File from SD tough SDfat 32-bit file sysyetm
 uint32_t read32(File& f) {
   uint32_t result;
   f.read(&result, sizeof(result));
   return result;
 }
 
+// Draw bitmam file. Image
 uint8_t showBMP(char *nm, int x, int y) {
   File bmpFile;
   int bmpWidth, bmpHeight;    // W+H in pixels
@@ -1031,6 +1052,7 @@ uint8_t showBMP(char *nm, int x, int y) {
   return (ret);
 }
 
+// Draw Background loop. Used only once for the main screen.
 void drawBackgroundLoop() {
 
   char *nm = namebuf + pathlen;
@@ -1082,11 +1104,12 @@ void drawBackgroundLoop() {
   else root.rewindDirectory();
 }
 
+// Draw Main screen
 void drawHomeScreen() {
 
   dow();   // Get new day of the week
   //tft.fillScreen(BLACK);                     //////////////////////////////Just Black background////////////////////////
-   drawBackgroundLoop();                     /////////////////////////////////////// BMP ///////////////////////////////
+  drawBackgroundLoop();                     /////////////////////////////////////// BMP ///////////////////////////////
 
   zeroAllData();
   drawAlarmStatus();
@@ -1100,6 +1123,7 @@ void drawHomeScreen() {
   drawPaintButton();
 }
 
+// Draw Radio button
 void drawRadioButton() {
   extern const uint8_t RadioButton[4225];
   int pos_XRB = 207;
@@ -1108,6 +1132,7 @@ void drawRadioButton() {
   tft.pushColors(RadioButton, 4225, 1);
 }
 
+// Draw Bloetoth button
 void drawBluetoothButton() {
   extern const uint8_t BluetoothButton[825];
   int pos_XBB = 345;
@@ -1116,6 +1141,7 @@ void drawBluetoothButton() {
   tft.pushColors(BluetoothButton, 816, 1);
 }
 
+// Draw pause button
 void drawPause(int X, int Y) {
   extern const uint8_t ButtonPause[3600];
   int  pos_XPAUSE = X;
@@ -1124,6 +1150,7 @@ void drawPause(int X, int Y) {
   tft.pushColors(ButtonPause, 3600, 1);
 }
 
+// Draw Media Button
 void draw_Media_Screen() {
   tft.fillScreen(BLACK);
   drawRadioButton();
@@ -1132,6 +1159,7 @@ void draw_Media_Screen() {
   drawBackButton();
 }
 
+// Draw previus Button
 void drawPreviousButton() {
   extern const uint8_t PreviousButton[0x9C4];
   int  pos_XPB = 95;
@@ -1140,6 +1168,7 @@ void drawPreviousButton() {
   tft.pushColors(PreviousButton, 2496, 1);
 }
 
+// Draw Next Button for the music player
 void drawNextButton() {
   extern const uint8_t NextButton[0x9C4];
   int  pos_XNB = 335;
@@ -1149,6 +1178,7 @@ void drawNextButton() {
 
 }
 
+// Draw Volume Down Button
 void drawVolumeDown() {
   extern const uint8_t VolumeDown[0x170];
   int  pos_XVD = 25;
@@ -1157,6 +1187,7 @@ void drawVolumeDown() {
   tft.pushColors(VolumeDown, 368, 1);
 }
 
+// Draw Volume Up Button
 void drawVolumeUp() {
   extern const uint8_t VolumeUp[0x3B8];
   int  pos_XVU = tft.width() - 58;
@@ -1165,6 +1196,7 @@ void drawVolumeUp() {
   tft.pushColors(VolumeUp, 944, 1);
 }
 
+// Draw Mp3 Player screen
 void mp3_Player_Screen() {
   tft.fillScreen(BLACK);
   drawPreviousButton();
@@ -1174,6 +1206,7 @@ void mp3_Player_Screen() {
   drawVolumeUp();
 }
 
+// Draw Radio Screen. Under Development.
 void draw_Radio_Screen() {
   tft.fillScreen(BLACK);
   drawBackButton();
@@ -1191,6 +1224,7 @@ void checkAlarmStatus(int n) {
   }
 }
 
+// Store Alarm One to EEPROM memory. You can rindomize it the setup loop and declaration section if you uncoment ramdom() and seed() attributus
 void storeAlarmOneToEEPROM() {
   for (int i = 0; i <= 6; i++) {
     Serial.print("Alarm One EEPROM #");
@@ -1201,6 +1235,7 @@ void storeAlarmOneToEEPROM() {
   }
 }
 
+// Store alarm Two to the EEPROM
 void storeAlarmTwoToEEPROM() {
   for (int i = 0; i <= 6; i++) {
     Serial.print("Alarm Two EEPROM #");
@@ -1211,6 +1246,7 @@ void storeAlarmTwoToEEPROM() {
   }
 }
 
+// Set alarm 1 or 2 int a. Detail instructions in a setup
 void setAlarm(int a, byte ADay, byte AHour, byte AMinute, byte ASeconds, byte AlarmBits, bool ADy, bool Ah12, bool APM) {
   if (a == 1) {
     rtc.setA1Time(ADay, AHour, AMinute, AlarmBits, ASeconds, ADy, Ah12, APM); // dOfW_Date True for days of the week false for a date
@@ -1218,16 +1254,18 @@ void setAlarm(int a, byte ADay, byte AHour, byte AMinute, byte ASeconds, byte Al
   }
   else if (a == 2) {
     rtc.setA2Time(ADay, AHour, AMinute, AlarmBits, ADy, Ah12, APM); // dOfW_Date True for days of the week false for a date
-    storeAlarmTwoToEEPROM();
+    if (ADy)storeAlarmTwoToEEPROM();
   }
 }
 
+// Get alarm. Both
 void getAlarm(byte& A1Day, byte& A1Hour, byte& A1Minute, byte& A1Second, byte& A1Bits, bool& A1Dy, bool& A1h12, bool& A1PM, byte& A2Day, byte& A2Hour, byte& A2Minute, byte& A2Bits, bool& A2Dy, bool& A2h12, bool& A2PM) {
   rtc.getA1Time(A1Day, A1Hour, A1Minute, A1Second, A1Bits, A1Dy, A1h12, A1PM);
   rtc.getA2Time(A2Day, A2Hour, A2Minute, A2Bits, A2Dy, A2h12, A2PM);
 
 }
 
+// Retrive weeks arreys from EEPROM
 void getAlarmWeeksFromEEPROM() {
   for (int i = 0; i <= 6; i++) {
     Serial.print("Alarm One get from EEPROM #");
@@ -1245,6 +1283,7 @@ void getAlarmWeeksFromEEPROM() {
   }
 }
 
+// Draw Alarm Screen
 void draw_Alarm_Screen() {
   drawSmallClock(); // Initiate clock
   drawBackButton(); // Draw back button
@@ -1500,6 +1539,7 @@ void draw_Alarm_Screen() {
 
 }
 
+// Reset alarm for the next day in the list
 void resetAlarmWhenDoW () { // Reset alarm for the next selected day in a week
   if (A1Dy) {
     //  Serial.print("Day of the week: ");
@@ -1508,7 +1548,7 @@ void resetAlarmWhenDoW () { // Reset alarm for the next selected day in a week
     //  Serial.println(A1Day);
     if (rtc.getDoW() != A1Day) {
       for (int i = rtc.getDoW(); i <= 7; i++) {
-        if (i == 8) {
+        if (i == 8) { // Difference in logic. We must do this if we want to include day 7
           i = i - 1;
         }
         //      Serial.print("EEProm alterantion #");
@@ -1558,6 +1598,7 @@ void resetAlarmWhenDoW () { // Reset alarm for the next selected day in a week
   }
 }
 
+// Determins a color for each checkmark and draws it on a screen if True
 void checkDoW() {
   // Check stored values for an alarm One
   if (alarmOneWeek[0]) {
@@ -1583,6 +1624,7 @@ void checkDoW() {
   }
 }
 
+// Same here.
 void checkDoW2() {
   if (alarmTwoWeek[0]) {
     drawCheckMarkRed(X_A2 - 39, Y_A2 + 134);
@@ -1607,6 +1649,7 @@ void checkDoW2() {
   }
 }
 
+// Draw play buton
 void drawPlay() {
   extern const uint8_t ButtonPlay[4096];
   int  pos_XPLAY = 241;
@@ -1615,12 +1658,10 @@ void drawPlay() {
   tft.pushColors(ButtonPlay, 4096, 1);
 }
 
+
 void activateMusicIfAlarm() {
-  byte Alarm = 1;
-  if (rtc.checkIfAlarm(Alarm)) {
-    Serial.println(" Alarm One Is ON!"); // Debug
+  if ((rtc.checkIfAlarm(1)) || (rtc.checkIfAlarm(2))) {
     mp3.setVolume(30);
-    delay(t);
     mp3.play();
     playBackStatus = 1;
     if (currentPage == 5) {
@@ -1630,20 +1671,7 @@ void activateMusicIfAlarm() {
   }
 }
 
-void activateMusicIfAlarm2(){
-if (rtc.checkIfAlarm(2)) { // Anyting other than 1 in bunary
-    Serial.println(" Alarm Two Is ON!"); // Debug
-    mp3.setVolume(30);
-    delay(t);
-    mp3.play();
-    playBackStatus = 1;
-    if (currentPage == 5) {
-      tft.fillRect(209, 129, 63, 62, BLACK);
-      drawPause(208, 128);
-    }
-  }
-}
-
+// Setup. All the good stuff is here
 void setup() {
 
   //  Begin serial
@@ -1686,7 +1714,7 @@ void setup() {
   // set_Clock(19, 28, 28, true); // Upload Hours( First integer) an 24 hour format even for 12hr mod.
   // Add more 28 seconds to upload time.  Last one is h12 state. false for 24 HR
   // set_Date(12, 16, 17, 7); // Last one is the day of the week 1 = Sunday
-  // setAlarm(1, 7, 10, 37, 01, 0x0 , true, true , false);
+  // setAlarm(1, 1, 01, 40, 00, 0x0 , true, true , false);
   // setAlarm(2, 1, 07, 01, 01, 0x0 , false, true , false);
   // rtc.setHour(19);
   // rtc.setMinute(29);
@@ -1728,6 +1756,7 @@ void setup() {
 
 }
 
+// Im using void to distinguish different states of the currentPage integer to navigate menu back and forth.
 void loop() {
 
   // Main screen
@@ -2327,8 +2356,8 @@ void loop() {
         }
       }
 
-      if (newAlarmOne) {
-        newDoW2Selector = false;
+      if (newAlarmOne) { // If we changet anythings it will be true
+        newDoW2Selector = false; // Flag off
         switch (newA1Day) {
           case 1:
             day_Of_The_Week = "Sunday";
@@ -2363,7 +2392,7 @@ void loop() {
           String newA1SDay = day_Of_The_Week.substring(0, 3);
           tft.print(newA1SDay);
           // set Alarm
-          if((newA1h12) && (newA1PM) && ( newA1Hour <= 12)) newA1Hour + 12;
+           if((newA1h12) && (newA1PM) && ( newA1Hour <= 12)) newA1Hour = newA1Hour + 12;
           setAlarm(1, newA1Day, newA1Hour, newA1Minute, A1Second, A1Bits, newA1Dy, newA1h12 , newA1PM);
         }
         else {
@@ -2382,24 +2411,19 @@ void loop() {
           }
 
           // Set alarm
-          if((newA1h12) && (newA1PM) && ( newA1Hour <= 12)) newA1Hour + 12;
+          if((newA1h12) && (newA1PM) && ( newA1Hour <= 12)) newA1Hour = newA1Hour + 12;
           setAlarm(1, newA1Date, newA1Hour, newA1Minute, A1Second, A1Bits, newA1Dy, newA1h12 , newA1PM);
         }
 
         // Change Status
-        rtc.turnOffAlarm(2); // Turn off alarm Two
-        tft.setCursor(X_A2 + 65, Y_A2 + 51);
-        tft.fillRect(X_A2 + 65, Y_A2 + 51, 34, 14, BLACK);
-        checkAlarmStatus(2);
-        rtc.turnOffAlarm(1);
-        rtc.turnOnAlarm(1); // Turn alarm on
+        rtc.turnOnAlarm(1); // Turn alarm one on
         tft.setCursor(X_A1 + 65, Y_A1 + 51);
         tft.fillRect(X_A1 + 65, Y_A1 + 51, 34, 14, BLACK);
         checkAlarmStatus(1);
 
       }
+    delay(t*10);
     }
-
 
     // If we press clear button
     if ((xpos >= X_A1 + 24) && (xpos <= X_A1 + 74) && (ypos >= Y_A1 + 182) && (ypos <= Y_A1 + 207)) {
@@ -2633,6 +2657,7 @@ void loop() {
 
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Alarm two set
 
     // If we click at the Hours
     if ((xpos >= X_A2 - 20) && (xpos <= X_A2 + 30) && (ypos >= Y_A2 + 94) && (ypos <= Y_A2 + 130)) {
@@ -3005,7 +3030,7 @@ void loop() {
           String newA2SDay = day_Of_The_Week.substring(0, 3);
           tft.print(newA2SDay);
           // set Alarm
-          if((newA2h12) && (newA2PM) && ( newA2Hour <= 12)) newA2Hour + 12;
+          if ((newA2h12) && (newA2PM) && ( newA2Hour <= 12)) newA2Hour = newA2Hour + 12;
           setAlarm(2, newA2Day, newA2Hour, newA2Minute, A1Second, A2Bits, newA2Dy, newA2h12 , newA2PM);
         }
         else {
@@ -3024,16 +3049,11 @@ void loop() {
           }
 
           // Set alarm
-          if((newA2h12) && (newA2PM) && ( newA2Hour <= 12)) newA2Hour + 12;
+          if ((newA2h12) && (newA2PM) && ( newA2Hour <= 12)) newA2Hour = newA2Hour + 12;
           setAlarm(2, newA2Date, newA2Hour, newA2Minute, A1Second, A2Bits, newA2Dy, newA2h12 , newA2PM);
         }
 
         // Change Status
-        rtc.turnOffAlarm(1); // Turn off alarm one
-        tft.setCursor(X_A1 + 65, Y_A1 + 51);
-        tft.fillRect(X_A1 + 65, Y_A1 + 51, 34, 14, BLACK);
-        checkAlarmStatus(1);
-        rtc.turnOffAlarm(2); // Off than On to make it work
         rtc.turnOnAlarm(2); // Turn alarm on
         tft.setCursor(X_A2 + 65, Y_A2 + 51);
         tft.fillRect(X_A2 + 65, Y_A2 + 51, 34, 14, BLACK);
@@ -3380,19 +3400,19 @@ void loop() {
   if (digitalRead(tiltSwitch) == NULL) {
     mp3.pause();
     playBackStatus = 0;
-    
-    if(rtc.checkAlarmEnabled(1)){ // if Alarm 1 was on
-    rtc.turnOffAlarm(1);
-    delay(t);
-    rtc.turnOnAlarm(1);
+
+    if (rtc.checkAlarmEnabled(1)) { // if Alarm 1 was on
+      rtc.turnOffAlarm(1);
+      delay(t);
+      rtc.turnOnAlarm(1);
     }
-    if (rtc.checkAlarmEnabled(2)){ // If alarm two was on
-    rtc.turnOffAlarm(2);
-    delay(t);
-    rtc.turnOnAlarm(2);
+    if (rtc.checkAlarmEnabled(2)) { // If alarm two was on
+      rtc.turnOffAlarm(2);
+      delay(t);
+      rtc.turnOnAlarm(2);
     }
 
-    if (currentPage == 5) {
+    if (currentPage == 5) { // If in a Mp3 player screen
       tft.fillRect(209, 129, 63, 62, BLACK);
       drawMediaButton(208, 128);
     }
@@ -3401,13 +3421,8 @@ void loop() {
   // Set Alarm for the next day in current week
   resetAlarmWhenDoW();
 
-  // Play Alarm 1
-  if(rtc.checkAlarmEnabled(1)) {
+  // Play music if Alarm 1 or 2 is ON and Ringing
   activateMusicIfAlarm();
-  }
-  // Play Alarm 2
-   if(rtc.checkAlarmEnabled(2)) {
-  activateMusicIfAlarm2();
-   }
+
 } // End of the void loop
 
