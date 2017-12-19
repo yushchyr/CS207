@@ -173,7 +173,7 @@ int X_A2 = 316; // Alarm 2
 int Y_A2 = 80;
 
 // Delay time for checkmarks
-int t = 200;
+int t = 100;
 
 // MP3 Declaration
 SoftwareSerial mp3Serial(13, 12);  // RX, TX
@@ -1658,7 +1658,7 @@ void drawPlay() {
   tft.pushColors(ButtonPlay, 4096, 1);
 }
 
-
+// Activate alarm music
 void activateMusicIfAlarm() {
   if ((rtc.checkIfAlarm(1)) || (rtc.checkIfAlarm(2))) {
     mp3.setVolume(30);
@@ -1711,13 +1711,13 @@ void setup() {
 
   // Initiation of RTC objects;
   // rtc.getHour(h12, PM); // This line is here to get h12 and PM values
-  // set_Clock(19, 28, 28, true); // Upload Hours( First integer) an 24 hour format even for 12hr mod.
-  // Add more 28 seconds to upload time.  Last one is h12 state. false for 24 HR
-  // set_Date(12, 16, 17, 7); // Last one is the day of the week 1 = Sunday
+  // set_Clock(2, 56, 30, true); // True for 12Hr mode. Upload Hours( First integer) an 24 hour format even for 12hr mod.
+  // Add more 3 to 2 min of upload time. On the first boot.  Last one is h12 state. false for 24 HR
+  // set_Date(12, 18, 17, 1); // Last one is the day of the week 1 = Sunday
   // setAlarm(1, 1, 01, 40, 00, 0x0 , true, true , false);
   // setAlarm(2, 1, 07, 01, 01, 0x0 , false, true , false);
-  // rtc.setHour(19);
-  // rtc.setMinute(29);
+  // rtc.setHour(2); // To set Only 24 hour. int please
+  // rtc.setMinute(40);
   // rtc.setDoW(7);
   // 1 - Which alarm (1 or 2)
   // 2 - Day of the week or Date
@@ -3419,10 +3419,12 @@ void loop() {
   }
 
   // Set Alarm for the next day in current week
+  if(dow != rtc.getDoW());
   resetAlarmWhenDoW();
 
   // Play music if Alarm 1 or 2 is ON and Ringing
-  activateMusicIfAlarm();
-
+  if((rtc.checkAlarmEnabled(1)) || (rtc.checkAlarmEnabled(2))){
+   activateMusicIfAlarm(); // Call also clear the flag in RTC library
+  }
 } // End of the void loop
 
