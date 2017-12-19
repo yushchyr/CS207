@@ -1,7 +1,7 @@
 # Stargate Alarm Clock [V3]
 ===================================
 
-This is an alarm clock project made with a a help of MCUfriend display, RTC clock and a MP3 player. This project is exploring arduino poteantail to the max. It is also futuring mercury tilt switch as a means of controling alarm and a psecondary a pause button in at the mp3 player screen.
+This is an alarm clock project made with a a help of MCUfriend display, RTC clock and a MP3 player. This project is exploring arduino poteantail to the max. It is also futuring mercury tilt switch as a means of controling alarm and a secondary a pause button in at the mp3 player screen.
 
 ![alt text][20171126_180822]
 
